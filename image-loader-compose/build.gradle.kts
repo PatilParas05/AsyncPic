@@ -36,8 +36,20 @@ android {
         jvmTarget = "11"
     }
 }
-group = "com.paraspatil.image_loader_compose"
+group = "com.github.PatilParas05"
 version = "1.0.0"
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+                groupId = "com.github.PatilParas05"
+                artifactId = "asyncpic"
+                version = "1.0.0"
+            }
+        }
+    }
+}
 
 dependencies {
     implementation(libs.androidx.core.ktx)

@@ -219,7 +219,7 @@ fun ShowcaseTopBar(
             ) {
                 Column {
                     Text(
-                        text = "ComposeImageLoader",
+                        text = "AsyncPic's",
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold,
                             brush = Brush.horizontalGradient(
@@ -228,7 +228,7 @@ fun ShowcaseTopBar(
                         )
                     )
                     Text(
-                        text = "Library Showcase Demo",
+                        text = "Library Showcase ",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.White.copy(alpha = 0.7f)
                     )
