@@ -25,7 +25,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -73,24 +72,24 @@ fun LibraryShowcaseApp() {
                 ShowcaseImage(2, "Ocean Sunset", "Circle Transform",
                     "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=800&h=600&fit=crop",
                     ImageTransformation.Circle, 189),
-                ShowcaseImage(3, "City Skyline", "RoundedCorners 24dp",
+                ShowcaseImage(3, "City Skyline", "RoundedCorners 25dp",
                     "https://images.unsplash.com/photo-1514565131-fce0801e5785?w=800&h=600&fit=crop",
-                    ImageTransformation.RoundedCorners(24.dp), 456),
+                    ImageTransformation.RoundedCorners(25.dp), 456),
                 ShowcaseImage(4, "Forest Path", "Error Handling",
                     "https://invalid-url-to-show-error.com/image.jpg",
                     ImageTransformation.RoundedCorners(16.dp), 312),
-                ShowcaseImage(5, "Desert Landscape", "RoundedCorners 20dp",
+                ShowcaseImage(5, "Desert Landscape", "RoundedCorners 30dp",
                     "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&h=600&fit=crop",
-                    ImageTransformation.RoundedCorners(20.dp), 278),
+                    ImageTransformation.RoundedCorners(30.dp), 278),
                 ShowcaseImage(6, "Profile Avatar", "Circle Avatar",
                     "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
                     ImageTransformation.Circle, 198),
                 ShowcaseImage(7, "Tropical Beach", "Zoomable & ContentScale.Fit",
                     "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop",
                     ImageTransformation.None, 345),
-                ShowcaseImage(8, "Night City", "RoundedCorners 18dp",
+                ShowcaseImage(8, "Night City", "RoundedCorners 40dp",
                     "https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&h=600&fit=crop",
-                    ImageTransformation.RoundedCorners(18.dp), 421),
+                    ImageTransformation.RoundedCorners(40.dp), 221),
                 ShowcaseImage(9, "Aurora Sky", "Default Shimmer Loading",
                     "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&h=600&fit=crop",
                     ImageTransformation.RoundedCorners(12.dp), 567),
@@ -325,7 +324,7 @@ fun ShowcaseCard(
                     }
                 )
             },
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.05f)),
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
@@ -392,6 +391,7 @@ fun ShowcaseCard(
         }
     }
 }
+
 
 @Composable
 fun CustomErrorDisplay(title: String) {
@@ -510,7 +510,6 @@ fun LikeButton(
         )
     }
 }
-
 @Composable
 fun FullscreenImageViewer(
     image: ShowcaseImage,
@@ -590,7 +589,7 @@ fun FullscreenImageViewer(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(bottom = 72.dp)
                 ) {
                     Surface(
                         color = Color(0xFF8b5cf6).copy(alpha = 0.3f),

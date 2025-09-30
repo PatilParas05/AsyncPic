@@ -1,11 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-<<<<<<< HEAD
     alias(libs.plugins.kotlin.compose)
-=======
-    alias(libs.plugins.kotlin.compose) 
->>>>>>> ae43d8ce6dd823316e4c00e461857ff0fc9b6951
     id("maven-publish")
 }
 
@@ -56,13 +52,13 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.foundation:foundation")
-<<<<<<< HEAD
+
     implementation("androidx.compose.material:material")
     implementation("androidx.compose.material:material-icons-extended")
-=======
+
     implementation("androidx.compose.material:material")         
     implementation("androidx.compose.material:material-icons-extended") // Provides Icons.Default, Icons.Filled etc.
->>>>>>> ae43d8ce6dd823316e4c00e461857ff0fc9b6951
+
 
     // Coil - The underlying image loader
     implementation("io.coil-kt:coil-compose:2.5.0")
