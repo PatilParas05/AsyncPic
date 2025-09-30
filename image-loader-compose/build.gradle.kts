@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose) // ADDED Kotlin Compose Compiler Plugin
+    alias(libs.plugins.kotlin.compose) 
     id("maven-publish")
 }
 
@@ -15,7 +15,7 @@ android {
         consumerProguardFiles("consumer-rules.pro")
     }
 
-    buildFeatures { // ADDED buildFeatures
+    buildFeatures { 
         compose = true
     }
 
@@ -52,7 +52,7 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.foundation:foundation")
-    implementation("androidx.compose.material:material")         // Provides Icon, etc.
+    implementation("androidx.compose.material:material")         
     implementation("androidx.compose.material:material-icons-extended") // Provides Icons.Default, Icons.Filled etc.
 
     // Coil - The underlying image loader
