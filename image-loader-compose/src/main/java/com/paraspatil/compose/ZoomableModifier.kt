@@ -13,29 +13,32 @@ fun Modifier.zoomable(): Modifier = composed {
 
     var scale by remember { mutableStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
-    var lastScale by remember { mutableStateOf(1f) }
 
-    pointerInput(Unit) {
-        detectTransformGestures { _, pan, zoom, _ ->
-            scale = (lastScale * zoom).coerceIn(1f, 5f)
-            offset += pan
-        }
-    }.pointerInput(Unit) {
-        detectTapGestures(
-            onDoubleTap = {
-                if (scale > 1f) {
-                    scale = 1f
-                    offset = Offset.Zero
-                } else {
-                    scale = 3f
-                }
-                lastScale = scale
+    this
+        .pointerInput(Unit) {
+            detectTransformGestures { _, pan, zoom, _ ->
+                val newScale = (scale * zoom).coerceIn(1f, 5f)
+                scale = newScale
+                offset += pan
             }
-        )
-    }.graphicsLayer(
-        scaleX = scale,
-        scaleY = scale,
-        translationX = offset.x,
-        translationY = offset.y
-    )
+        }
+        .pointerInput(Unit) {
+            detectTapGestures(
+                onDoubleTap = {
+                    if (scale > 1f) {
+                        scale = 1f
+                        offset = Offset.Zero
+                    } else {
+                        scale = 3f
+                    }
+                }
+            )
+        }
+        .graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+            translationX = offset.x
+            translationY = offset.y
+        }
 }
+
