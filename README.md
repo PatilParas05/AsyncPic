@@ -1,140 +1,449 @@
-# ComposeImageLoader
+ <div align="center">
+    <img src="AsyncPic.png" width="500" alt="Showcase">
+  <img src="Compose.png" width="500" alt="Showcase">
+</div>
 
-ComposeImageLoader is a Jetpack Compose library designed to simplify image loading, offering features like various image transformations, customizable placeholders, error state handling, and a convenient zoomable modifier. The project also includes a showcase app demonstrating the library's capabilities.
+ # 📸 AsyncPic
 
-## Library Module: `image-loader-compose`
+A powerful and flexible image loading library for Jetpack Compose that simplifies advanced image handling with built-in transformations, loading states, and gesture support.
 
-The core of this project is the `image-loader-compose` library.
+[![](https://jitpack.io/v/PatilParas05/AsyncPic.svg)](https://jitpack.io/#PatilParas05/AsyncPic)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Android](https://img.shields.io/badge/Platform-Android-green.svg)](https://developer.android.com)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-purple.svg)](https://kotlinlang.org)
 
-### Features
+## ✨ Features
 
-*   **Unified Image Loading**: A central `AsyncImageLoader` composable for handling image requests.
-*   **Multiple Image Sources**: Load images from URLs, `File` objects, or Drawable resource IDs using the flexible `ImageRequestData` model.
-*   **Image Transformations**:
-    *   `ImageTransformation.None`: Display the image as is.
-    *   `ImageTransformation.Circle`: Crop the image into a circle, ideal for avatars.
-    *   `ImageTransformation.RoundedCorners(dp)`: Apply rounded corners with a specified radius.
-*   **Customizable Placeholders**:
-    *   Use the built-in `DefaultShimmer()` for an animated loading placeholder.
-    *   Provide your own custom `@Composable` function for a unique loading state.
-*   **Customizable Error States**:
-    *   Use the built-in `DefaultErrorIcon()` for a default error indicator.
-    *   Provide your own custom `@Composable` function to handle image loading errors.
-*   **Zoomable Modifier**: Easily add pinch-to-zoom, double-tap-to-zoom, and pan gestures to your images with the `.zoomable()` modifier.
-*   **Built on Coil**: Leverages the power and efficiency of the [Coil](https://coil-kt.github.io/coil/) image loading library.
+- **Unified API** - Single composable for all image loading needs
+- **Built-in Transformations** - Circle, rounded corners, and custom shapes
+- **Smart Loading States** - Automatic placeholder, loading, and error handling
+- **Multiple Sources** - Load from URLs, files, or resources
+- **Gesture Support** - Built-in pinch-to-zoom and pan capabilities
+- **Customizable UI** - Custom placeholders and error composables
+- **Powered by Coil** - Leverages Coil's efficient image loading
 
-### Installation
+## Installation
 
-To use `image-loader-compose` in your Android Jetpack Compose project, add the following dependency to your module's `build.gradle.kts` (or `build.gradle`) file:
+### Step 1: Add JitPack repository
+
+Add JitPack to your project's `settings.gradle.kts`:
 
 ```kotlin
-// build.gradle.kts
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+```
+
+### Step 2: Add the dependency
+
+Add AsyncPic to your app's `build.gradle.kts`:
+
+```kotlin
 dependencies {
-    implementation("com.paraspatil.image_loader_compose:image-loader-compose:1.0.0")
-    // Ensure you have Coil's compose artifact as well, if not already included
-    implementation("io.coil-kt:coil-compose:2.5.0") // Or the latest version
+    implementation("com.github.PatilParas05:AsyncPic:1.0.0")
 }
 ```
 
-```groovy
-// build.gradle (Groovy)
-dependencies {
-    implementation 'com.paraspatil.image_loader_compose:image-loader-compose:1.0.0'
-    // Ensure you have Coil's compose artifact as well, if not already included
-    implementation 'io.coil-kt:coil-compose:2.5.0' // Or the latest version
-}
-```
+## Quick Start
 
-**(Note:** You would need to publish your library to a Maven repository like Maven Central for the above dependency to work for others. If you are using it locally as a module, the dependency would be `implementation(project(":image-loader-compose"))`.)
-
-### Usage
-
-#### Basic Example
-
-The primary component is `AsyncImageLoader`. You provide it with `ImageRequestData`:
+### Basic Usage
 
 ```kotlin
-import androidx.compose.foundation.layout.size
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.paraspatil.compose.AsyncImageLoader
-import com.paraspatil.compose.ImageRequestData
-import com.paraspatil.compose.ImageTransformation
-import com.paraspatil.compose.DefaultShimmer // Optional: if using default shimmer
-
-@Composable
-fun MyImageDisplay() {
-    AsyncImageLoader(
-        data = ImageRequestData(
-            url = "https://your.image.url/here.jpg",
-            contentDescription = "An example image",
-            transform = ImageTransformation.RoundedCorners(16.dp), // Apply rounded corners
-            placeholder = { DefaultShimmer() } // Use the default shimmer
-        ),
-        modifier = Modifier.size(200.dp)
-    )
-}
-```
-
-#### Key Components to Import:
-
-*   `com.paraspatil.compose.AsyncImageLoader`: The main composable for displaying images.
-*   `com.paraspatil.compose.ImageRequestData`: The data class to define your image request.
-*   `com.paraspatil.compose.ImageTransformation`: Sealed class for different image transformations.
-*   `com.paraspatil.compose.DefaultShimmer`: A built-in shimmer placeholder.
-*   `com.paraspatil.compose.DefaultErrorIcon`: A built-in error icon.
-*   `com.paraspatil.compose.zoomable`: Modifier extension for zoom and pan functionality.
-
-#### Image Sources in `ImageRequestData`
-
-Provide only one of these per request:
-*   `url: String?`
-*   `file: File?`
-*   `resId: Int?`
-
-#### Transformations
-
-Set the `transform` property in `ImageRequestData`:
-*   `ImageTransformation.None`
-*   `ImageTransformation.Circle`
-*   `ImageTransformation.RoundedCorners(radius: Dp)`
-
-#### Placeholders and Error States
-
-Customize loading and error states within `ImageRequestData`:
-*   `placeholder: @Composable () -> Unit = { DefaultShimmer() }`
-*   `error: @Composable () -> Unit = { DefaultErrorIcon() }`
-    You can replace `DefaultShimmer()` or `DefaultErrorIcon()` with your own composable functions.
-
-#### Zoomable Modifier
-
-Apply the `.zoomable()` modifier directly to the `AsyncImageLoader` for pinch-to-zoom, double-tap zoom, and pan gestures. Ensure the `contentScale` is appropriate (e.g., `ContentScale.Fit` often works well with `zoomable`).
-
-```kotlin
-import com.paraspatil.compose.zoomable
-import androidx.compose.ui.layout.ContentScale
-
 AsyncImageLoader(
-    data = ImageRequestData(url = "..."),
+    data = ImageRequestData(
+        url = "https://example.com/image.jpg",
+        contentDescription = "Sample Image"
+    ),
+    modifier = Modifier.size(200.dp)
+)
+```
+
+### With Transformations
+
+```kotlin
+// Circle transformation
+AsyncImageLoader(
+    data = ImageRequestData(
+        url = imageUrl,
+        contentDescription = "Profile Picture",
+        transform = ImageTransformation.Circle
+    ),
+    modifier = Modifier.size(100.dp)
+)
+
+// Rounded corners
+AsyncImageLoader(
+    data = ImageRequestData(
+        url = imageUrl,
+        contentDescription = "Card Image",
+        transform = ImageTransformation.RoundedCorners(16.dp)
+    ),
+    modifier = Modifier.fillMaxWidth()
+)
+```
+
+### Custom Placeholder and Error Handling
+
+```kotlin
+AsyncImageLoader(
+    data = ImageRequestData(
+        url = imageUrl,
+        contentDescription = "Product Image",
+        placeholder = {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        },
+        error = {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.BrokenImage,
+                    contentDescription = "Error"
+                )
+                Text("Failed to load image")
+            }
+        }
+    ),
+    modifier = Modifier.size(300.dp)
+)
+```
+
+### Load from Different Sources
+
+```kotlin
+// From URL
+ImageRequestData(url = "https://example.com/image.jpg")
+
+// From File
+ImageRequestData(file = File("/path/to/image.jpg"))
+
+// From Resource
+ImageRequestData(resId = R.drawable.my_image)
+```
+
+### Zoomable Images
+
+Add pinch-to-zoom and double-tap zoom functionality:
+
+```kotlin
+AsyncImageLoader(
+    data = ImageRequestData(
+        url = imageUrl,
+        contentDescription = "Zoomable Image",
+        transform = ImageTransformation.None
+    ),
     modifier = Modifier
         .fillMaxSize()
-        .zoomable(), // Add this for zoom capabilities
+        .zoomable(), // Enable zoom gestures
     contentScale = ContentScale.Fit
 )
 ```
 
-## Showcase App (`app` module)
+## 📖 API Reference
 
-The `app` module in this project serves as a comprehensive demonstration of the `image-loader-compose` library. It showcases:
-*   Various image transformations.
-*   Default and custom placeholders.
-*   Error handling.
-*   The zoomable modifier in action in a full-screen viewer.
-*   Different layout examples (Grid, List).
+### AsyncImageLoader
 
-To run the demo, simply open the project in Android Studio and run the `app` configuration on an emulator or device.
+The main composable for loading images.
+
+```kotlin
+@Composable
+fun AsyncImageLoader(
+    data: ImageRequestData,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop
+)
+```
+
+**Parameters:**
+- `data`: Image request configuration
+- `modifier`: Modifier to apply to the image
+- `contentScale`: How to scale the image content
+
+### ImageRequestData
+
+Configuration data class for image requests.
+
+```kotlin
+data class ImageRequestData(
+    val url: String? = null,
+    val file: File? = null,
+    val resId: Int? = null,
+    val contentDescription: String? = null,
+    val transform: ImageTransformation = ImageTransformation.None,
+    val placeholder: @Composable () -> Unit = { DefaultShimmer() },
+    val error: @Composable () -> Unit = { DefaultErrorIcon() },
+    val onRetry: (() -> Unit)? = null
+)
+```
+
+### ImageTransformation
+
+Available transformations for images:
+
+```kotlin
+sealed class ImageTransformation {
+    object None : ImageTransformation()
+    object Circle : ImageTransformation()
+    data class RoundedCorners(val dp: Dp) : ImageTransformation()
+}
+```
+
+### Modifier Extensions
+
+#### zoomable()
+
+Adds pinch-to-zoom, double-tap, and pan gesture support:
+
+```kotlin
+fun Modifier.zoomable(
+    minScale: Float = 1f,
+    maxScale: Float = 5f
+): Modifier
+```
+
+**Features:**
+- Pinch to zoom (1x to 5x)
+- Double-tap to toggle zoom
+- Pan when zoomed in
+- Smooth animations
+
+## 🧑‍💻 Advanced Usage
+
+### Fullscreen Image Viewer
+
+Create an interactive fullscreen viewer with zoom capabilities:
+
+```kotlin
+@Composable
+fun ImageViewerDialog(
+    imageUrl: String,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+        ) {
+            AsyncImageLoader(
+                data = ImageRequestData(
+                    url = imageUrl,
+                    contentDescription = "Fullscreen Image",
+                    transform = ImageTransformation.None
+                ),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zoomable(),
+                contentScale = ContentScale.Fit
+            )
+            
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                    tint = Color.White
+                )
+            }
+        }
+    }
+}
+```
+
+### Custom Animated Placeholder
+
+```kotlin
+@Composable
+fun CustomAnimatedPlaceholder() {
+    val infiniteTransition = rememberInfiniteTransition()
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.9f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFF8b5cf6).copy(alpha = alpha * 0.3f),
+                        Color(0xFFec4899).copy(alpha = alpha * 0.2f)
+                    )
+                )
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(color = Color.White.copy(alpha = alpha))
+    }
+}
+
+// Usage
+AsyncImageLoader(
+    data = ImageRequestData(
+        url = imageUrl,
+        placeholder = { CustomAnimatedPlaceholder() }
+    )
+)
+```
+
+### Grid of Images
+
+```kotlin
+@Composable
+fun ImageGrid(imageUrls: List<String>) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3),
+        contentPadding = PaddingValues(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(imageUrls) { url ->
+            AsyncImageLoader(
+                data = ImageRequestData(
+                    url = url,
+                    contentDescription = "Grid Image",
+                    transform = ImageTransformation.RoundedCorners(8.dp)
+                ),
+                modifier = Modifier
+                    .aspectRatio(1f)
+                    .clickable { /* Handle click */ }
+            )
+        }
+    }
+}
+```
+
+## Sample App
+
+The library includes a comprehensive showcase app demonstrating all features:
+
+- Image transformations (Circle, Rounded Corners)
+- Loading states with shimmer effects
+- Custom animated placeholders
+- Error handling
+- Fullscreen viewer with zoom
+- Search functionality
+- Interactive UI elements
+
+To run the sample app:
+
+```bash
+git clone https://github.com/PatilParas05/AsyncPic.git
+cd AsyncPic
+./gradlew :app:installDebug
+```
+
+## Dependencies
+
+AsyncPic is built on top of:
+
+- **Jetpack Compose** - Modern declarative UI toolkit
+- **Coil 2.5.0** - Fast, lightweight image loading
+- **Kotlin Coroutines** - Asynchronous programming
+
+## Requirements
+
+- **Min SDK**: 26 (Android 8.0)
+- **Compile SDK**: 36
+- **Kotlin**: 1.9+
+- **Compose**: 1.5+
+
+## Performance Tips
+
+1. **Use appropriate ContentScale** - `ContentScale.Crop` for thumbnails, `ContentScale.Fit` for full images
+2. **Apply transformations** - Use built-in transformations for better performance
+3. **Specify explicit sizes** - Helps avoid unnecessary recomposition
+4. **Leverage caching** - Coil automatically caches images for faster subsequent loads
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Development Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/PatilParas05/AsyncPic.git
+
+# Open in Android Studio
+# Build the project
+./gradlew build
+
+# Run tests
+./gradlew test
+```
+
+## 📄 License
+
+```
+MIT License
+
+Copyright (c) 2024 Paras Patil
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+## Author
+
+**Paras Patil**
+
+- GitHub: [@PatilParas05](https://github.com/PatilParas05)
+
+## Acknowledgments
+
+- Built with [Coil](https://coil-kt.github.io/coil/)
+- Inspired by modern image loading libraries
+- Sample images from [Unsplash](https://unsplash.com)
+- Icons from [Material Icons](https://fonts.google.com/icons)
 
 ---
 
-Feel free to suggest any changes or additions!
+If you find AsyncPic helpful, please consider giving it a ⭐ on GitHub!
+
+**Made with ❤️ for the Android Compose community**
