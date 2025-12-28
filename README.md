@@ -1,32 +1,63 @@
  <div align="center">
-    <img src="AsyncPic.png" width="500" alt="Showcase">
-  <img src="Compose.png" width="500" alt="Showcase">
+  <img width="500" height="1024" alt="AsyncPicv2" src="https://github.com/user-attachments/assets/8cc6147c-d5ea-4444-ac0a-61d54b383ef5" />
 </div>
+<div align="center">
+ 
+# 📸 AsyncPic v2.0
 
- # 📸 AsyncPic
+**The Modern Image Loading Library for Jetpack Compose**
 
-A powerful and flexible image loading library for Jetpack Compose that simplifies advanced image handling with built-in transformations, loading states, and gesture support.
+A powerful, flexible, and developer-friendly image loading solution built on top of Coil, designed specifically for Jetpack Compose applications.
 
 [![](https://jitpack.io/v/PatilParas05/AsyncPic.svg)](https://jitpack.io/#PatilParas05/AsyncPic)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Android](https://img.shields.io/badge/Platform-Android-green.svg)](https://developer.android.com)
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-purple.svg)](https://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.1+-purple.svg)](https://kotlinlang.org)
+[![Compose](https://img.shields.io/badge/Compose-1.7+-blue.svg)](https://developer.android.com/jetpack/compose)
+
+[Features](#-features) • [Installation](#-installation) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Examples](#-examples) • [Contributing](#-contributing)
+
+</div>
+
+---
+
+## 🎯 What's New in v2.0
+
+- ✅ **Minimum Shimmer Duration** - Control how long the shimmer effect displays
+- ✅ **Double-Tap to Zoom** - Smooth zoom in/out with double-tap gesture
+- ✅ **Animated Zoom Transitions** - Buttery smooth zoom animations
+- ✅ **Improved Error Handling** - Better error states with icons
+- ✅ **Enhanced Shimmer Effect** - Diagonal animated shimmer
+- ✅ **Better Shape Clipping** - Proper shape handling for all states
+- ✅ **Fullscreen Viewer Demo** - Complete example with zoom support
+
+---
 
 ## ✨ Features
 
-- **Unified API** - Single composable for all image loading needs
-- **Built-in Transformations** - Circle, rounded corners, and custom shapes
-- **Smart Loading States** - Automatic placeholder, loading, and error handling
-- **Multiple Sources** - Load from URLs, files, or resources
-- **Gesture Support** - Built-in pinch-to-zoom and pan capabilities
-- **Customizable UI** - Custom placeholders and error composables
-- **Powered by Coil** - Leverages Coil's efficient image loading
+### Core Features
+- 🚀 **Simple API** - Single composable function for all image loading needs
+- 🎨 **Shape Support** - Built-in support for rounded corners, circles, and custom shapes
+- ⚡ **Smart Loading States** - Automatic shimmer placeholders and error handling
+- 🔍 **Zoom & Pan** - Pinch-to-zoom, double-tap zoom, and smooth panning
+- 🎭 **Customizable UI** - Custom placeholders and error composables
+- 🔄 **Crossfade Animation** - Smooth transitions when images load
+- ⏱️ **Controlled Shimmer** - Set minimum shimmer display time for better UX
 
-## Installation
+### Advanced Features
+- 📦 **Powered by Coil 2.6** - Efficient caching and loading
+- 🎯 **Content Scale Options** - Crop, Fit, FillBounds, and more
+- 🖼️ **Multiple Sources** - URLs, files, and drawable resources (planned)
+- ♿ **Accessibility** - Full content description support
+- 🎬 **Compose-First** - Built for modern Android development
 
-### Step 1: Add JitPack repository
+---
 
-Add JitPack to your project's `settings.gradle.kts`:
+## 📦 Installation
+
+### Step 1: Add JitPack Repository
+
+Add JitPack to your **`settings.gradle.kts`** (root level):
 
 ```kotlin
 dependencyResolutionManagement {
@@ -39,317 +70,195 @@ dependencyResolutionManagement {
 }
 ```
 
-### Step 2: Add the dependency
+### Step 2: Add Dependency
 
-Add AsyncPic to your app's `build.gradle.kts`:
+Add AsyncPic to your app module's **`build.gradle.kts`**:
 
 ```kotlin
 dependencies {
-    implementation("com.github.PatilParas05:AsyncPic:1.0.0")
+    implementation("com.github.PatilParas05:AsyncPic:2.0.0")
 }
 ```
 
-## Quick Start
+### Step 3: Sync Project
+
+Sync your project with Gradle files and you're ready to go! 🎉
+
+---
+
+## 🚀 Quick Start
 
 ### Basic Usage
 
+The simplest way to load an image:
+
 ```kotlin
-AsyncImageLoader(
-    data = ImageRequestData(
-        url = "https://example.com/image.jpg",
-        contentDescription = "Sample Image"
-    ),
+AsyncPic(
+    url = "https://example.com/image.jpg",
     modifier = Modifier.size(200.dp)
 )
 ```
 
-### With Transformations
+### With Rounded Corners
 
 ```kotlin
-// Circle transformation
-AsyncImageLoader(
-    data = ImageRequestData(
-        url = imageUrl,
-        contentDescription = "Profile Picture",
-        transform = ImageTransformation.Circle
-    ),
-    modifier = Modifier.size(100.dp)
-)
-
-// Rounded corners
-AsyncImageLoader(
-    data = ImageRequestData(
-        url = imageUrl,
-        contentDescription = "Card Image",
-        transform = ImageTransformation.RoundedCorners(16.dp)
-    ),
-    modifier = Modifier.fillMaxWidth()
+AsyncPic(
+    url = "https://example.com/profile.jpg",
+    modifier = Modifier.size(100.dp),
+    shape = RoundedCornerShape(16.dp),
+    contentDescription = "Profile Picture"
 )
 ```
 
-### Custom Placeholder and Error Handling
+### Circular Image
 
 ```kotlin
-AsyncImageLoader(
-    data = ImageRequestData(
-        url = imageUrl,
-        contentDescription = "Product Image",
-        placeholder = {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        },
-        error = {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.BrokenImage,
-                    contentDescription = "Error"
-                )
-                Text("Failed to load image")
-            }
-        }
-    ),
-    modifier = Modifier.size(300.dp)
+AsyncPic(
+    url = "https://example.com/avatar.jpg",
+    modifier = Modifier.size(80.dp),
+    shape = CircleShape,
+    contentDescription = "User Avatar"
 )
 ```
 
-### Load from Different Sources
+### With Zoom Support
 
 ```kotlin
-// From URL
-ImageRequestData(url = "https://example.com/image.jpg")
-
-// From File
-ImageRequestData(file = File("/path/to/image.jpg"))
-
-// From Resource
-ImageRequestData(resId = R.drawable.my_image)
-```
-
-### Zoomable Images
-
-Add pinch-to-zoom and double-tap zoom functionality:
-
-```kotlin
-AsyncImageLoader(
-    data = ImageRequestData(
-        url = imageUrl,
-        contentDescription = "Zoomable Image",
-        transform = ImageTransformation.None
-    ),
-    modifier = Modifier
-        .fillMaxSize()
-        .zoomable(), // Enable zoom gestures
-    contentScale = ContentScale.Fit
+AsyncPic(
+    url = "https://example.com/photo.jpg",
+    modifier = Modifier.fillMaxSize(),
+    zoomable = true,
+    contentScale = ContentScale.Fit,
+    contentDescription = "Zoomable Photo"
 )
 ```
 
-## 📖 API Reference
+---
 
-### AsyncImageLoader
+## 📖 Documentation
 
-The main composable for loading images.
+### AsyncPic Function
 
 ```kotlin
 @Composable
-fun AsyncImageLoader(
-    data: ImageRequestData,
+fun AsyncPic(
+    url: String?,
     modifier: Modifier = Modifier,
+    contentDescription: String? = null,
+    shape: Shape = RectangleShape,
+    placeholder: @Composable () -> Unit = { DefaultShimmer() },
+    error: @Composable () -> Unit = { DefaultError() },
+    zoomable: Boolean = false,
+    minShimmerTime: Long = 1000,
     contentScale: ContentScale = ContentScale.Crop
 )
 ```
 
-**Parameters:**
-- `data`: Image request configuration
-- `modifier`: Modifier to apply to the image
-- `contentScale`: How to scale the image content
+### Parameters
 
-### ImageRequestData
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `url` | `String?` | **Required** | Image URL to load |
+| `modifier` | `Modifier` | `Modifier` | Compose modifier for styling |
+| `contentDescription` | `String?` | `null` | Accessibility description |
+| `shape` | `Shape` | `RectangleShape` | Clip shape (RoundedCornerShape, CircleShape, etc.) |
+| `placeholder` | `@Composable () -> Unit` | `DefaultShimmer()` | Custom loading placeholder |
+| `error` | `@Composable () -> Unit` | `DefaultError()` | Custom error state UI |
+| `zoomable` | `Boolean` | `false` | Enable pinch-to-zoom and double-tap |
+| `minShimmerTime` | `Long` | `1000` | Minimum shimmer display duration (ms) |
+| `contentScale` | `ContentScale` | `ContentScale.Crop` | How to scale the image |
 
-Configuration data class for image requests.
+### Content Scale Options
+
+- `ContentScale.Crop` - Scale to fill, cropping if necessary (default)
+- `ContentScale.Fit` - Scale to fit entirely within bounds
+- `ContentScale.FillBounds` - Stretch to fill bounds
+- `ContentScale.Inside` - No scaling if image is smaller
+- `ContentScale.FillWidth` - Scale to match width
+- `ContentScale.FillHeight` - Scale to match height
+
+
+---
+
+## 🎨 Zoom Gestures
+
+AsyncPic includes powerful zoom functionality:
+
+### Features
+- **Pinch to Zoom**: Scale from 1x to 4x
+- **Double-Tap**: Toggle between normal and 3x zoom
+- **Pan**: Move around when zoomed in
+- **Smooth Animations**: 300ms animated transitions
+- **Auto-Reset**: Returns to normal when scaled below 1x
+
+### Usage
 
 ```kotlin
-data class ImageRequestData(
-    val url: String? = null,
-    val file: File? = null,
-    val resId: Int? = null,
-    val contentDescription: String? = null,
-    val transform: ImageTransformation = ImageTransformation.None,
-    val placeholder: @Composable () -> Unit = { DefaultShimmer() },
-    val error: @Composable () -> Unit = { DefaultErrorIcon() },
-    val onRetry: (() -> Unit)? = null
+AsyncPic(
+    url = imageUrl,
+    modifier = Modifier.fillMaxSize(),
+    zoomable = true,
+    contentScale = ContentScale.Fit
 )
 ```
 
-### ImageTransformation
+> **Note**: When `zoomable = true`, the shape clipping is removed from the image itself to allow zoom to extend beyond bounds. The placeholder and error states still respect the shape.
 
-Available transformations for images:
+---
 
-```kotlin
-sealed class ImageTransformation {
-    object None : ImageTransformation()
-    object Circle : ImageTransformation()
-    data class RoundedCorners(val dp: Dp) : ImageTransformation()
-}
+## 🏗️ Architecture
+
+AsyncPic is built on a modern Android architecture:
+
+```
+┌─────────────────────────────────────────┐
+│         Your Compose UI                 │
+│                                         │
+│    AsyncPic(url = "...")                │
+└─────────────────┬───────────────────────┘
+                  │
+┌─────────────────▼───────────────────────┐
+│         AsyncPic Component              │
+│  • State Management (Loading/Success)   │
+│  • Shape Clipping                       │
+│  • Zoom Gesture Handling                │
+│  • Minimum Shimmer Duration             │
+└─────────────────┬───────────────────────┘
+                  │
+┌─────────────────▼───────────────────────┐
+│    Coil SubcomposeAsyncImage            │
+│  • Image Loading                        │
+│  • Caching (Memory + Disk)              │
+│  • Crossfade Animation                  │
+│  • Request Management                   │
+└─────────────────────────────────────────┘
 ```
 
-### Modifier Extensions
+---
 
-#### zoomable()
+## ⚙️ Requirements
 
-Adds pinch-to-zoom, double-tap, and pan gesture support:
+- **Min SDK**: 26 (Android 8.0 Oreo)
+- **Target SDK**: 36 (Android 15)
+- **Kotlin**: 2.1+
+- **Compose**: 1.7+
+- **Coil**: 2.6.0
 
-```kotlin
-fun Modifier.zoomable(
-    minScale: Float = 1f,
-    maxScale: Float = 5f
-): Modifier
-```
+---
 
-**Features:**
-- Pinch to zoom (1x to 5x)
-- Double-tap to toggle zoom
-- Pan when zoomed in
-- Smooth animations
+## 📱 Sample App
 
-## 🧑‍💻 Advanced Usage
+The repository includes a comprehensive demo app showcasing:
 
-### Fullscreen Image Viewer
-
-Create an interactive fullscreen viewer with zoom capabilities:
-
-```kotlin
-@Composable
-fun ImageViewerDialog(
-    imageUrl: String,
-    onDismiss: () -> Unit
-) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black)
-        ) {
-            AsyncImageLoader(
-                data = ImageRequestData(
-                    url = imageUrl,
-                    contentDescription = "Fullscreen Image",
-                    transform = ImageTransformation.None
-                ),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .zoomable(),
-                contentScale = ContentScale.Fit
-            )
-            
-            IconButton(
-                onClick = onDismiss,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(16.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Close",
-                    tint = Color.White
-                )
-            }
-        }
-    }
-}
-```
-
-### Custom Animated Placeholder
-
-```kotlin
-@Composable
-fun CustomAnimatedPlaceholder() {
-    val infiniteTransition = rememberInfiniteTransition()
-    val alpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.9f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-    
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.radialGradient(
-                    colors = listOf(
-                        Color(0xFF8b5cf6).copy(alpha = alpha * 0.3f),
-                        Color(0xFFec4899).copy(alpha = alpha * 0.2f)
-                    )
-                )
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator(color = Color.White.copy(alpha = alpha))
-    }
-}
-
-// Usage
-AsyncImageLoader(
-    data = ImageRequestData(
-        url = imageUrl,
-        placeholder = { CustomAnimatedPlaceholder() }
-    )
-)
-```
-
-### Grid of Images
-
-```kotlin
-@Composable
-fun ImageGrid(imageUrls: List<String>) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
-        contentPadding = PaddingValues(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(imageUrls) { url ->
-            AsyncImageLoader(
-                data = ImageRequestData(
-                    url = url,
-                    contentDescription = "Grid Image",
-                    transform = ImageTransformation.RoundedCorners(8.dp)
-                ),
-                modifier = Modifier
-                    .aspectRatio(1f)
-                    .clickable { /* Handle click */ }
-            )
-        }
-    }
-}
-```
-
-## Sample App
-
-The library includes a comprehensive showcase app demonstrating all features:
-
-- Image transformations (Circle, Rounded Corners)
-- Loading states with shimmer effects
-- Custom animated placeholders
+- Basic image loading
+- Rounded corners and shapes
+- Loading states with extended shimmer
 - Error handling
 - Fullscreen viewer with zoom
-- Search functionality
-- Interactive UI elements
+- Image grids
+- Interactive UI
 
-To run the sample app:
+### Run the Sample
 
 ```bash
 git clone https://github.com/PatilParas05/AsyncPic.git
@@ -357,53 +266,101 @@ cd AsyncPic
 ./gradlew :app:installDebug
 ```
 
-## Dependencies
-
-AsyncPic is built on top of:
-
-- **Jetpack Compose** - Modern declarative UI toolkit
-- **Coil 2.5.0** - Fast, lightweight image loading
-- **Kotlin Coroutines** - Asynchronous programming
-
-## Requirements
-
-- **Min SDK**: 26 (Android 8.0)
-- **Compile SDK**: 36
-- **Kotlin**: 1.9+
-- **Compose**: 1.5+
-
-## Performance Tips
-
-1. **Use appropriate ContentScale** - `ContentScale.Crop` for thumbnails, `ContentScale.Fit` for full images
-2. **Apply transformations** - Use built-in transformations for better performance
-3. **Specify explicit sizes** - Helps avoid unnecessary recomposition
-4. **Leverage caching** - Coil automatically caches images for faster subsequent loads
+---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Here's how you can help:
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+### Ways to Contribute
 
-### Development Setup
+1. **Report Bugs** - Open an issue with details and reproduction steps
+2. **Suggest Features** - Share your ideas for improvements
+3. **Submit PRs** - Fix bugs or add features
+4. **Improve Docs** - Help make documentation better
+5. **Share Feedback** - Let us know how you're using AsyncPic
 
-```bash
-# Clone the repository
-git clone https://github.com/PatilParas05/AsyncPic.git
+## 🔄 Migration from v1.x
 
-# Open in Android Studio
-# Build the project
-./gradlew build
+### Breaking Changes
 
-# Run tests
-./gradlew test
+**v1.x**:
+```kotlin
+AsyncImageLoader(
+    data = ImageRequestData(
+        url = imageUrl,
+        transform = ImageTransformation.RoundedCorners(16.dp)
+    )
+)
 ```
 
-## 📄 License
+**v2.0**:
+```kotlin
+AsyncPic(
+    url = imageUrl,
+    shape = RoundedCornerShape(16.dp)
+)
+```
+
+### Key Differences
+
+| Feature | v1.x | v2.0 |
+|---------|------|------|
+| Main function | `AsyncImageLoader` | `AsyncPic` |
+| Configuration | `ImageRequestData` class | Direct parameters |
+| Transformations | `ImageTransformation` enum | Compose `Shape` |
+| Shimmer control | Not available | `minShimmerTime` parameter |
+| Double-tap zoom | Not available | Built-in support |
+
+---
+
+## 📊 Performance
+
+AsyncPic is built for performance:
+
+- ✅ **Memory Efficient** - Coil's memory caching
+- ✅ **Disk Caching** - Automatic persistent cache
+- ✅ **Request Deduplication** - Multiple requests for same URL merged
+- ✅ **Bitmap Pooling** - Reuses bitmap memory
+- ✅ **Lazy Loading** - Only loads when visible
+- ✅ **Cancellation** - Automatic request cancellation
+
+---
+
+## 🐛 Troubleshooting
+
+### Image Not Loading?
+
+1. **Check internet permission** in `AndroidManifest.xml`:
+   ```xml
+   <uses-permission android:name="android.permission.INTERNET"/>
+   ```
+
+2. **Verify URL is accessible**:
+   - Open URL in browser
+   - Check for HTTPS issues
+   - Verify network connection
+
+3. **Check Coil logs** in Logcat:
+   ```
+   Filter: coil
+   ```
+
+### Zoom Not Working?
+
+- Ensure `zoomable = true` is set
+- Use `ContentScale.Fit` for best zoom experience
+- Check that parent container allows gestures
+
+### Shimmer Shows Too Long?
+
+- Reduce `minShimmerTime` parameter
+- Default is 1000ms (1 second)
+- Set to `0L` to disable minimum duration
+
+---
+
+## 📝 License
 
 ```
 MIT License
@@ -429,21 +386,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## Author
+---
 
-**Paras Patil**
+## 🙏 Acknowledgments
 
-- GitHub: [@PatilParas05](https://github.com/PatilParas05)
-
-## Acknowledgments
-
-- Built with [Coil](https://coil-kt.github.io/coil/)
-- Inspired by modern image loading libraries
-- Sample images from [Unsplash](https://unsplash.com)
-- Icons from [Material Icons](https://fonts.google.com/icons)
+- **[Coil](https://coil-kt.github.io/)** - The amazing image loading library powering AsyncPic
+- **[Jetpack Compose](https://developer.android.com/jetpack/compose)** - Modern Android UI toolkit
+- **[Unsplash](https://unsplash.com)** - Sample images in demo app
+- **[Material Icons](https://fonts.google.com/icons)** - Icons used in examples
 
 ---
 
-If you find AsyncPic helpful, please consider giving it a ⭐ on GitHub!
+## ⭐ Show Your Support
 
-**Made with ❤️ for the Android Compose community**
+If AsyncPic helped you build something awesome, please:
+
+- ⭐ Star this repository
+- 🐦 Share on Twitter
+- 📝 Write a blog post
+- 💬 Spread the word
+
+---
+### Community Requests
+
+Have a feature request? [Open an issue](https://github.com/PatilParas05/AsyncPic/issues/new) with the label `enhancement`.
+
+---
+
+<div align="center">
+
+**Made with ❤️ for the Android Compose Community**
+
+[⬆ Back to Top](#-asyncpic-v20)
+
+</div>
