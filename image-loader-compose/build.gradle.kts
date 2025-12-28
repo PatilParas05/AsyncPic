@@ -37,7 +37,7 @@ android {
     }
 }
 group = "com.github.PatilParas05"
-version = "1.0.0"
+version = "2.0.0"
 afterEvaluate {
     publishing {
         publications {
@@ -45,7 +45,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.PatilParas05"
                 artifactId = "asyncpic"
-                version = "1.0.0"
+                version = "2.0.0"
             }
         }
     }
@@ -59,20 +59,17 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    // Compose Dependencies
     implementation(platform(libs.androidx.compose.bom)) // Using Compose BOM
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.foundation:foundation")
 
-    implementation("androidx.compose.material:material")
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.compose.material3:material3")
 
-    implementation("androidx.compose.material:material")         
-    implementation("androidx.compose.material:material-icons-extended") // Provides Icons.Default, Icons.Filled etc.
+    implementation("androidx.compose.material:material-icons-extended")
 
 
     // Coil - The underlying image loader
-    implementation("io.coil-kt:coil-compose:2.5.0")
-    implementation("com.google.accompanist:accompanist-placeholder-material:0.35.0-alpha")
+    api("io.coil-kt:coil-compose:2.6.0")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
 }
