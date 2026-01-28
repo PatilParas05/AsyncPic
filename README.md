@@ -76,7 +76,7 @@ Add AsyncPic to your app module's **`build.gradle.kts`**:
 
 ```kotlin
 dependencies {
-    implementation("com.github.PatilParas05:AsyncPic:2.0.0")
+    implementation("com.github.PatilParas05:AsyncPic:v2.0.0")
 }
 ```
 
