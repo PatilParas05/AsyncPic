@@ -414,6 +414,24 @@ Have a feature request? [Open an issue](https://github.com/PatilParas05/AsyncPic
 ---
 
 <div align="center">
+ 
+ ![Shimmer](https://github.com/user-attachments/assets/68162b2b-ff57-497b-b3e4-46c3bd064118) <br>
+ Shimmer
+ 
+</div>
+
+---
+
+<div align="center">
+ 
+![Zoomable](https://github.com/user-attachments/assets/127a0c93-eac6-45c2-b782-4e5f873d1950) <br>
+Zoom
+
+</div>
+
+---
+
+<div align="center">
 
 **Made with ❤️ for the Android Compose Community**
 
