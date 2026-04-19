@@ -1,8 +1,4 @@
- <div align="center">
-  <img width="500" height="1024" alt="AsyncPicv2" src="https://github.com/user-attachments/assets/8cc6147c-d5ea-4444-ac0a-61d54b383ef5" />
-</div>
-<div align="center">
- 
+
 # 📸 AsyncPic v2.0
 
 **The Modern Image Loading Library for Jetpack Compose**
@@ -15,7 +11,7 @@ A powerful, flexible, and developer-friendly image loading solution built on top
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1+-purple.svg)](https://kotlinlang.org)
 [![Compose](https://img.shields.io/badge/Compose-1.7+-blue.svg)](https://developer.android.com/jetpack/compose)
 
-[Features](#-features) • [Installation](#-installation) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Examples](#-examples) • [Contributing](#-contributing)
+[Features](#-features) • [Installation](#-installation) • [Quick Start](#-quick-start) • [Documentation](#-documentation)  • [Contributing](#-contributing)
 
 </div>
 
@@ -413,25 +409,7 @@ Have a feature request? [Open an issue](https://github.com/PatilParas05/AsyncPic
 
 ---
 
-<div align="center">
- 
- ![Shimmer](https://github.com/user-attachments/assets/68162b2b-ff57-497b-b3e4-46c3bd064118) <br>
- Shimmer
- 
-</div>
 
----
-
-<div align="center">
- 
-![Zoomable](https://github.com/user-attachments/assets/127a0c93-eac6-45c2-b782-4e5f873d1950) <br>
-Zoom
-
-</div>
-
----
-
-<div align="center">
 
 **Made with ❤️ for the Android Compose Community**
 
