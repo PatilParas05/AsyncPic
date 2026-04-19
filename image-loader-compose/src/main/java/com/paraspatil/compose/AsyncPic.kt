@@ -9,19 +9,21 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
-import coil.size.Size
 import kotlinx.coroutines.delay
 
 //AsyncPic V2.1
 @Composable
 fun AsyncPic(
-    url: String?,
+    source: ImageSource,
     modifier: Modifier = Modifier,
     contentDescription: String? = null,
     shape: Shape = RectangleShape,
+    placeholderUrl: String? = null,
+    blurRadius: Int = 0,
     placeholder: @Composable () -> Unit = { DefaultShimmer() },
     error: @Composable () -> Unit = { DefaultError() },
     zoomable: Boolean = false,
@@ -30,50 +32,99 @@ fun AsyncPic(
 ) {
     val context = LocalContext.current
 
-    // controls shimmer duration
-    var allowImage by remember(url) { mutableStateOf(false) }
+    val imageRequest = remember(source, placeholderUrl, blurRadius) {
+        val data = when (source) {
+            is ImageSource.Url -> source.value
+            is ImageSource.Resources -> source.resId
+            is ImageSource.Progressive -> source.finalUrl
+        }
 
-    LaunchedEffect(url) {
-        allowImage = false
-        delay(minShimmerTime)
-        allowImage = true
+        ImageRequest.Builder(context)
+            .data(data)
+            .placeholderMemoryCacheKey(placeholderUrl)
+            .crossfade(true)
+            .build()
     }
 
-    SubcomposeAsyncImage(
-        model = ImageRequest.Builder(context)
-            .data(url)
-            .crossfade(true)
-            .size(Size.ORIGINAL)
-            .build(),
-        contentDescription = contentDescription,
-        contentScale = contentScale,
-        modifier = modifier
-            .then(if (!zoomable) Modifier.clip(shape) else Modifier)
-            .then(if (zoomable) Modifier.zoomable() else Modifier),
+    // controls shimmer/blur duration
+    var allowClearImage by remember(source) { mutableStateOf(false) }
 
-        // loading always shimmer
-        loading = {
-            Box(Modifier.fillMaxSize().clip(shape)) {
-                placeholder()
-            }
-        },
+    LaunchedEffect(source) {
+        allowClearImage = false
+        delay(minShimmerTime)
+        allowClearImage = true
+    }
 
-        // success wait foe shimmer time
-        success = {
-            if (allowImage) {
-                SubcomposeAsyncImageContent()
-            } else {
-                Box(Modifier.fillMaxSize().clip(shape)) {
-                    placeholder()
+    Box(modifier = modifier
+        .then(if (!zoomable) Modifier.clip(shape) else Modifier)
+        .then(if (zoomable) Modifier.zoomable() else Modifier)
+    ) {
+        // Thumbnail/Blurred layer
+        if (source is ImageSource.Progressive && source.thumbnailUrl != null) {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(source.thumbnailUrl)
+                    .crossfade(true)
+                    .apply {
+                        if (blurRadius > 0) {
+                            transformations(CustomBlurTransformation(context, blurRadius.toFloat()))
+                        }
+                    }
+                    .build(),
+                contentDescription = null,
+                contentScale = contentScale,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        // High-res layer
+        SubcomposeAsyncImage(
+            model = imageRequest,
+            contentDescription = contentDescription,
+            contentScale = contentScale,
+            modifier = Modifier.fillMaxSize(),
+
+            loading = {
+                if (source !is ImageSource.Progressive || source.thumbnailUrl == null) {
+                    Box(Modifier.fillMaxSize()) {
+                        placeholder()
+                    }
+                }
+            },
+
+            // success wait for blur time
+            success = {
+                if (allowClearImage) {
+                    SubcomposeAsyncImageContent()
+                } else {
+                    // While waiting, show blurred high-res if it's already loaded, 
+                    // or just let the thumbnail layer below show.
+                    if (source is ImageSource.Progressive && source.thumbnailUrl != null) {
+                        // thumbnail is already showing underneath
+                    } else if (blurRadius > 0) {
+                         AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data(imageRequest.data)
+                                .transformations(CustomBlurTransformation(context, blurRadius.toFloat()))
+                                .build(),
+                            contentDescription = null,
+                            contentScale = contentScale,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Box(Modifier.fillMaxSize()) {
+                            placeholder()
+                        }
+                    }
+                }
+            },
+
+            // error
+            error = {
+                Box(Modifier.fillMaxSize()) {
+                    error()
                 }
             }
-        },
-
-        // error
-        error = {
-            Box(Modifier.fillMaxSize().clip(shape)) {
-                error()
-            }
-        }
-    )
+        )
+    }
 }
