@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.paraspatil.compose.AsyncPic
+import com.paraspatil.compose.ImageSource
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,7 +39,8 @@ class MainActivity : ComponentActivity() {
 
 data class DemoImage(
     val title: String,
-    val url: String?
+    val url: String?,
+    val thumbnailUrl: String? = null
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,6 +65,11 @@ fun AsyncPicDemoScreen() {
             DemoImage(
                 "Error / Failure State",
                 "https://invalid.url/image.png"
+            ),
+            DemoImage(
+                "Progressive Loading",
+                "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=2000", // High res
+                "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=50"   // Tiny thumb
             )
         )
     }
@@ -94,14 +101,22 @@ fun AsyncPicDemoScreen() {
                         elevation = CardDefaults.cardElevation(4.dp)
                     ) {
                         Box {
+                            val source = when {
+                                item.thumbnailUrl != null -> ImageSource.Progressive(item.url ?: "", item.thumbnailUrl)
+                                item.url != null -> ImageSource.Url(item.url)
+                                else -> ImageSource.Url("")
+                            }
                             AsyncPic(
-                                url = item.url,
+                                source = source,
+                                placeholderUrl = item.thumbnailUrl, // Pass the small image here
+                                blurRadius = 15, // Blur the initial load
                                 modifier = Modifier.fillMaxSize(),
-                                shape = RoundedCornerShape(16.dp),
-                                contentScale = ContentScale.Crop,
-
-                                // Shimmer ONLY for 2nd & 3rd card
-                                minShimmerTime = if (index == 1 || index == 2) 3500L else 0L
+                                // minShimmerTime controls when high-res replaces thumbnail
+                                minShimmerTime = when (index) {
+                                    1, 2 -> 3500L
+                                    4 -> 8000L // 8 seconds for Progressive Loading demo
+                                    else -> 0L
+                                }
                             )
 
                             Surface(
@@ -138,7 +153,7 @@ fun AsyncPicDemoScreen() {
                         .background(Color.Black)
                 ) {
                     AsyncPic(
-                        url = image.url,
+                        source = ImageSource.Url(image.url ?: ""),
                         modifier = Modifier.fillMaxSize(),
                         zoomable = true,
                         contentScale = ContentScale.Fit

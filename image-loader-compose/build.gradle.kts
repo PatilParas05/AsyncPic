@@ -37,7 +37,7 @@ android {
     }
 }
 group = "com.github.PatilParas05"
-version = "2.0.0"
+version = "2.1.0"
 afterEvaluate {
     publishing {
         publications {
@@ -45,7 +45,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.PatilParas05"
                 artifactId = "asyncpic"
-                version = "2.0.0"
+                version = "2.1.0"
             }
         }
     }
@@ -71,5 +71,5 @@ dependencies {
 
     // Coil - The underlying image loader
     api("io.coil-kt:coil-compose:2.6.0")
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
+    implementation("io.coil-kt:coil-base:2.6.0")
 }
