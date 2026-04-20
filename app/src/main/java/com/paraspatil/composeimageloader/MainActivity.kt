@@ -75,7 +75,7 @@ fun AsyncPicDemoScreen() {
             DemoImage(
                 "Animated GIF (Resource)",
                 url = null,
-                resId = R.drawable.test00 // Changed to use a local resource for testing
+                resId = R.drawable.test00
             ),
             DemoImage(
                 "Animated WebP Support",

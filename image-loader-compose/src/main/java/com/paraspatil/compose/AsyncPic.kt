@@ -19,7 +19,7 @@ import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import kotlinx.coroutines.delay
 
-//AsyncPic V2.1 - Fixed GIF/WebP Support
+//AsyncPic V2.2 - Fixed GIF/WebP Support
 @Composable
 fun AsyncPic(
     source: ImageSource,
@@ -65,13 +65,17 @@ fun AsyncPic(
 
     // Check if URL is animated format
     val isAnimated = remember(source) {
-        val url = when (source) {
-            is ImageSource.Url -> source.value
-            is ImageSource.Progressive -> source.finalUrl
-            else -> ""
+        when (source) {
+            is ImageSource.Url -> {
+                source.value.endsWith(".gif", true) || source.value.endsWith(".webp", true)
+            }
+            is ImageSource.Progressive -> {
+                source.finalUrl.endsWith(".gif", true) || source.finalUrl.endsWith(".webp", true)
+            }
+            is ImageSource.Resources -> {
+                true
+            }
         }
-        url.endsWith(".gif", ignoreCase = true) ||
-                url.endsWith(".webp", ignoreCase = true)
     }
 
     // controls shimmer/blur duration - skip for animated
