@@ -72,4 +72,5 @@ dependencies {
     // Coil - The underlying image loader
     api("io.coil-kt:coil-compose:2.6.0")
     implementation("io.coil-kt:coil-base:2.6.0")
+    implementation("io.coil-kt:coil-gif:2.6.0")
 }

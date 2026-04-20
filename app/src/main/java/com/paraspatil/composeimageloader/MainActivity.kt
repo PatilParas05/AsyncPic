@@ -70,6 +70,14 @@ fun AsyncPicDemoScreen() {
                 "Progressive Loading",
                 "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=2000", // High res
                 "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=50"   // Tiny thumb
+            ),
+            DemoImage(
+                "Animated GIF Support",
+                "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXp6N3BrdmR0N3BrdmR0N3BrdmR0N3BrdmR0N3BrdmR0N3BrdmR0JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKMGpxxpfDQV5Sg/giphy.gif"
+            ),
+            DemoImage(
+                "Animated WebP Support",
+                "https://www.gstatic.com/webp/animated/1.webp"
             )
         )
     }
