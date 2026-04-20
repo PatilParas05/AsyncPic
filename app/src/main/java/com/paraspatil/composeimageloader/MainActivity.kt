@@ -40,7 +40,8 @@ class MainActivity : ComponentActivity() {
 data class DemoImage(
     val title: String,
     val url: String?,
-    val thumbnailUrl: String? = null
+    val thumbnailUrl: String? = null,
+    val resId: Int? = null
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,8 +73,9 @@ fun AsyncPicDemoScreen() {
                 "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=50"   // Tiny thumb
             ),
             DemoImage(
-                "Animated GIF Support",
-                "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXp6N3BrdmR0N3BrdmR0N3BrdmR0N3BrdmR0N3BrdmR0N3BrdmR0JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKMGpxxpfDQV5Sg/giphy.gif"
+                "Animated GIF (Resource)",
+                url = null,
+                resId = R.drawable.test00 // Changed to use a local resource for testing
             ),
             DemoImage(
                 "Animated WebP Support",
@@ -102,7 +104,7 @@ fun AsyncPicDemoScreen() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(220.dp)
-                            .clickable(enabled = item.url != null) {
+                            .clickable(enabled = item.url != null || item.resId != null) {
                                 selectedImage = item
                             },
                         shape = RoundedCornerShape(16.dp),
@@ -110,14 +112,15 @@ fun AsyncPicDemoScreen() {
                     ) {
                         Box {
                             val source = when {
+                                item.resId != null -> ImageSource.Resources(item.resId)
                                 item.thumbnailUrl != null -> ImageSource.Progressive(item.url ?: "", item.thumbnailUrl)
                                 item.url != null -> ImageSource.Url(item.url)
                                 else -> ImageSource.Url("")
                             }
                             AsyncPic(
                                 source = source,
-                                placeholderUrl = item.thumbnailUrl, // Pass the small image here
-                                blurRadius = 15, // Blur the initial load
+                                placeholderUrl = item.thumbnailUrl,
+                                blurRadius = if (index == 4) 15 else 0,
                                 modifier = Modifier.fillMaxSize(),
                                 // minShimmerTime controls when high-res replaces thumbnail
                                 minShimmerTime = when (index) {
@@ -160,8 +163,12 @@ fun AsyncPicDemoScreen() {
                         .fillMaxSize()
                         .background(Color.Black)
                 ) {
+                    val source = when {
+                        image.resId != null -> ImageSource.Resources(image.resId)
+                        else -> ImageSource.Url(image.url ?: "")
+                    }
                     AsyncPic(
-                        source = ImageSource.Url(image.url ?: ""),
+                        source = source,
                         modifier = Modifier.fillMaxSize(),
                         zoomable = true,
                         contentScale = ContentScale.Fit

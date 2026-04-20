@@ -1,5 +1,6 @@
 package com.paraspatil.compose
 
+import android.os.Build
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
@@ -9,13 +10,16 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
+import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import kotlinx.coroutines.delay
 
-//AsyncPic V2.1
+//AsyncPic V2.1 - Fixed GIF/WebP Support
 @Composable
 fun AsyncPic(
     source: ImageSource,
@@ -32,6 +36,19 @@ fun AsyncPic(
 ) {
     val context = LocalContext.current
 
+    // CREATE CUSTOM IMAGE LOADER WITH GIF/WEBP SUPPORT
+    val gifImageLoader = remember {
+        ImageLoader.Builder(context)
+            .components {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    add(ImageDecoderDecoder.Factory())
+                } else {
+                    add(GifDecoder.Factory())
+                }
+            }
+            .build()
+    }
+
     val imageRequest = remember(source, placeholderUrl, blurRadius) {
         val data = when (source) {
             is ImageSource.Url -> source.value
@@ -46,20 +63,37 @@ fun AsyncPic(
             .build()
     }
 
-    // controls shimmer/blur duration
+    // Check if URL is animated format
+    val isAnimated = remember(source) {
+        val url = when (source) {
+            is ImageSource.Url -> source.value
+            is ImageSource.Progressive -> source.finalUrl
+            else -> ""
+        }
+        url.endsWith(".gif", ignoreCase = true) ||
+                url.endsWith(".webp", ignoreCase = true)
+    }
+
+    // controls shimmer/blur duration - skip for animated
     var allowClearImage by remember(source) { mutableStateOf(false) }
 
     LaunchedEffect(source) {
-        allowClearImage = false
-        delay(minShimmerTime)
-        allowClearImage = true
+        if (isAnimated) {
+            // Show animated content immediately
+            allowClearImage = true
+        } else {
+            // Apply delay only for static images
+            allowClearImage = false
+            delay(minShimmerTime)
+            allowClearImage = true
+        }
     }
 
     Box(modifier = modifier
         .then(if (!zoomable) Modifier.clip(shape) else Modifier)
         .then(if (zoomable) Modifier.zoomable() else Modifier)
     ) {
-        // Thumbnail/Blurred layer
+        // Thumbnail/Blurred layer (only for Progressive)
         if (source is ImageSource.Progressive && source.thumbnailUrl != null) {
             AsyncImage(
                 model = ImageRequest.Builder(context)
@@ -77,9 +111,10 @@ fun AsyncPic(
             )
         }
 
-        // High-res layer
+        // High-res layer with GIF-enabled loader
         SubcomposeAsyncImage(
             model = imageRequest,
+            imageLoader = gifImageLoader,  // USE THE GIF-ENABLED LOADER
             contentDescription = contentDescription,
             contentScale = contentScale,
             modifier = Modifier.fillMaxSize(),
@@ -92,17 +127,16 @@ fun AsyncPic(
                 }
             },
 
-            // success wait for blur time
             success = {
-                if (allowClearImage) {
+                // ALWAYS show animated images immediately
+                if (isAnimated || allowClearImage) {
                     SubcomposeAsyncImageContent()
                 } else {
-                    // While waiting, show blurred high-res if it's already loaded, 
-                    // or just let the thumbnail layer below show.
+                    // Show placeholder/blur for static images during delay
                     if (source is ImageSource.Progressive && source.thumbnailUrl != null) {
-                        // thumbnail is already showing underneath
+                        // Let thumbnail underneath show
                     } else if (blurRadius > 0) {
-                         AsyncImage(
+                        AsyncImage(
                             model = ImageRequest.Builder(context)
                                 .data(imageRequest.data)
                                 .transformations(CustomBlurTransformation(context, blurRadius.toFloat()))
@@ -119,7 +153,6 @@ fun AsyncPic(
                 }
             },
 
-            // error
             error = {
                 Box(Modifier.fillMaxSize()) {
                     error()
