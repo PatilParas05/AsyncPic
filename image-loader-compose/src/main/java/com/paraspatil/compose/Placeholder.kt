@@ -68,3 +68,16 @@ fun DefaultError() {
         )
     }
 }
+@Composable
+fun SkeletonPlaceholder(color: Color=Color(0xFFE2E8F0)){
+    val transition = rememberInfiniteTransition(label = "skeleton")
+    val alpha by transition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 0.8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000),
+            repeatMode = RepeatMode.Reverse
+        ), label = "pulse"
+    )
+    Box(Modifier.fillMaxSize().background(color.copy(alpha = alpha)))
+}

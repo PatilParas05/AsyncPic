@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
@@ -19,7 +20,7 @@ import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import kotlinx.coroutines.delay
 
-//AsyncPic V2.2 - Fixed GIF/WebP Support
+//AsyncPic V2.3.0 - Skeleton-loading
 @Composable
 fun AsyncPic(
     source: ImageSource,
@@ -29,14 +30,18 @@ fun AsyncPic(
     placeholderUrl: String? = null,
     blurRadius: Int = 0,
     placeholder: @Composable () -> Unit = { DefaultShimmer() },
+    placeholderType: ImageSource.PlaceholderType = ImageSource.PlaceholderType.SHIMMER,//Default to shimmer
+    shimmerColor: Color = Color(0xFFCBD5E1),
     error: @Composable () -> Unit = { DefaultError() },
     zoomable: Boolean = false,
     minShimmerTime: Long = 1000,
-    contentScale: ContentScale = ContentScale.Crop
+    contentScale: ContentScale = ContentScale.Crop,
+    onSuccess: (() -> Unit)? = null,
+    onError: ((Throwable) -> Unit)? = null,
 ) {
     val context = LocalContext.current
 
-    // CREATE CUSTOM IMAGE LOADER WITH GIF/WEBP SUPPORT
+    // Create custom image Loader With GIF/WEBP Support
     val gifImageLoader = remember {
         ImageLoader.Builder(context)
             .components {
@@ -75,6 +80,13 @@ fun AsyncPic(
             is ImageSource.Resources -> {
                 true
             }
+        }
+    }
+    val currentPlaceholder = @Composable{
+        when(placeholderType){
+            ImageSource.PlaceholderType.SHIMMER -> DefaultShimmer()
+            ImageSource.PlaceholderType.SKELETON -> SkeletonPlaceholder(color=shimmerColor)
+            ImageSource.PlaceholderType.NONE -> {}
         }
     }
 
@@ -118,17 +130,17 @@ fun AsyncPic(
         // High-res layer with GIF-enabled loader
         SubcomposeAsyncImage(
             model = imageRequest,
-            imageLoader = gifImageLoader,  // USE THE GIF-ENABLED LOADER
+            imageLoader = gifImageLoader,  // Use The GIF-enabled Loader
             contentDescription = contentDescription,
             contentScale = contentScale,
             modifier = Modifier.fillMaxSize(),
+            onSuccess = {onSuccess?.invoke()},
+            onError = {onError?.invoke(it.result.throwable)},
 
             loading = {
-                if (source !is ImageSource.Progressive || source.thumbnailUrl == null) {
                     Box(Modifier.fillMaxSize()) {
-                        placeholder()
+                        currentPlaceholder()
                     }
-                }
             },
 
             success = {
@@ -151,7 +163,7 @@ fun AsyncPic(
                         )
                     } else {
                         Box(Modifier.fillMaxSize()) {
-                            placeholder()
+                            currentPlaceholder()
                         }
                     }
                 }

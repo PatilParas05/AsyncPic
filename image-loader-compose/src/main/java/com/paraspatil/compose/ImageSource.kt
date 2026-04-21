@@ -9,4 +9,10 @@ sealed class ImageSource {
         val thumbnailUrl: String? = null,
         val blurHash: String? = null
     ): ImageSource()
+
+    enum class PlaceholderType{
+        SHIMMER,
+        SKELETON,
+        NONE
+    }
 }

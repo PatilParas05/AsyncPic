@@ -56,6 +56,10 @@ fun AsyncPicDemoScreen() {
                 "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1080&q=80"
             ),
             DemoImage(
+                "Skeleton Loading State",
+                "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=4000&q=100"
+            ),
+            DemoImage(
                 "Tropical Paradise",
                 "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1080&q=80"
             ),
@@ -88,7 +92,7 @@ fun AsyncPicDemoScreen() {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("AsyncPic v2.1 Demo") }
+                    title = { Text("AsyncPic v2.3 Demo") }
                 )
             }
         ) { padding ->
@@ -120,12 +124,16 @@ fun AsyncPicDemoScreen() {
                             AsyncPic(
                                 source = source,
                                 placeholderUrl = item.thumbnailUrl,
+                                placeholderType = if (item.title == "Skeleton Loading State") ImageSource.PlaceholderType.SKELETON else ImageSource.PlaceholderType.SHIMMER,
+                                shimmerColor = if (item.title == "Skeleton Loading State") Color(0xFF334155) else Color(0xFFCBD5E1),
                                 blurRadius = if (index == 4) 15 else 0,
                                 modifier = Modifier.fillMaxSize(),
                                 // minShimmerTime controls when high-res replaces thumbnail
-                                minShimmerTime = when (index) {
-                                    1, 2 -> 3500L
-                                    4 -> 8000L // 8 seconds for Progressive Loading demo
+                                minShimmerTime = when (item.title) {
+                                    "Skeleton Loading State" -> 5000L // 5 seconds of pulsing
+                                    "Loading / Shimmer State" -> 8000L // 8 seconds of shimmering
+                                    "Progressive Loading" -> 5000L     // 5 seconds of blurred thumbnail
+                                    "Vibrant Mountain", "Tropical Paradise" -> 2000L // Standard delay
                                     else -> 0L
                                 }
                             )
