@@ -17,10 +17,13 @@ import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
+import coil.decode.SvgDecoder
+import coil.request.CachePolicy
 import coil.request.ImageRequest
+import coil.transform.CircleCropTransformation
 import kotlinx.coroutines.delay
 
-//AsyncPic V2.3.0 - Skeleton-loading
+//AsyncPic V2.4.0 - Cache control and SVG support
 @Composable
 fun AsyncPic(
     source: ImageSource,
@@ -29,6 +32,7 @@ fun AsyncPic(
     shape: Shape = RectangleShape,
     placeholderUrl: String? = null,
     blurRadius: Int = 0,
+    circleCrop: Boolean = false,
     placeholder: @Composable () -> Unit = { DefaultShimmer() },
     placeholderType: ImageSource.PlaceholderType = ImageSource.PlaceholderType.SHIMMER,//Default to shimmer
     shimmerColor: Color = Color(0xFFCBD5E1),
@@ -36,6 +40,8 @@ fun AsyncPic(
     zoomable: Boolean = false,
     minShimmerTime: Long = 1000,
     contentScale: ContentScale = ContentScale.Crop,
+    diskCachePolicy: CachePolicy = CachePolicy.ENABLED,
+    memoryCachePolicy: CachePolicy = CachePolicy.ENABLED,
     onSuccess: (() -> Unit)? = null,
     onError: ((Throwable) -> Unit)? = null,
 ) {
@@ -45,16 +51,28 @@ fun AsyncPic(
     val gifImageLoader = remember {
         ImageLoader.Builder(context)
             .components {
+                add(SvgDecoder.Factory())//Support for .svg files
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     add(ImageDecoderDecoder.Factory())
                 } else {
                     add(GifDecoder.Factory())
                 }
             }
+            .okHttpClient {
+                okhttp3.OkHttpClient.Builder()
+                    .addInterceptor { chain ->
+                        val request = chain.request().newBuilder()
+                            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+                            .header("Accept", "image/svg+xml,image/*,*/*")
+                            .build()
+                        chain.proceed(request)
+                    }
+                    .build()
+            }
             .build()
     }
 
-    val imageRequest = remember(source, placeholderUrl, blurRadius) {
+    val imageRequest = remember(source, placeholderUrl, blurRadius,diskCachePolicy,memoryCachePolicy,circleCrop) {
         val data = when (source) {
             is ImageSource.Url -> source.value
             is ImageSource.Resources -> source.resId
@@ -65,6 +83,23 @@ fun AsyncPic(
             .data(data)
             .placeholderMemoryCacheKey(placeholderUrl)
             .crossfade(true)
+            .diskCachePolicy(diskCachePolicy)
+            .memoryCachePolicy(memoryCachePolicy)
+            .apply {
+                val isSvg = when {
+                    data is String && data.contains(".svg", ignoreCase = true) -> true
+                    else -> false
+                }
+
+                if (isSvg) {
+                    decoderFactory(SvgDecoder.Factory())
+                    size(coil.size.Size.ORIGINAL)
+                }
+
+                if (circleCrop) {
+                    transformations(CircleCropTransformation())
+                }
+            }
             .build()
     }
 
@@ -72,10 +107,10 @@ fun AsyncPic(
     val isAnimated = remember(source) {
         when (source) {
             is ImageSource.Url -> {
-                source.value.endsWith(".gif", true) || source.value.endsWith(".webp", true)
+                source.value.endsWith(".gif", true) || source.value.endsWith(".webp", true) || source.value.endsWith(".svg", true)
             }
             is ImageSource.Progressive -> {
-                source.finalUrl.endsWith(".gif", true) || source.finalUrl.endsWith(".webp", true)
+                source.finalUrl.endsWith(".gif", true) || source.finalUrl.endsWith(".webp", true) || source.finalUrl.endsWith(".svg", true)
             }
             is ImageSource.Resources -> {
                 true
@@ -151,12 +186,13 @@ fun AsyncPic(
                     // Show placeholder/blur for static images during delay
                     if (source is ImageSource.Progressive && source.thumbnailUrl != null) {
                         // Let thumbnail underneath show
-                    } else if (blurRadius > 0) {
+                    } else if (blurRadius > 0 && !isAnimated) {
                         AsyncImage(
                             model = ImageRequest.Builder(context)
                                 .data(imageRequest.data)
                                 .transformations(CustomBlurTransformation(context, blurRadius.toFloat()))
                                 .build(),
+                            imageLoader = gifImageLoader,
                             contentDescription = null,
                             contentScale = contentScale,
                             modifier = Modifier.fillMaxSize()

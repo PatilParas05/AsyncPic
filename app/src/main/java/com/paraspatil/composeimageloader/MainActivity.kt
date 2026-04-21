@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil.request.CachePolicy
 import com.paraspatil.compose.AsyncPic
 import com.paraspatil.compose.ImageSource
 
@@ -84,7 +85,15 @@ fun AsyncPicDemoScreen() {
             DemoImage(
                 "Animated WebP Support",
                 "https://www.gstatic.com/webp/animated/1.webp"
-            )
+            ),
+            DemoImage(
+                "SVG Support (Vector)",
+                "https://raw.githubusercontent.com/coil-kt/coil/main/logo.svg"
+            ),
+            DemoImage(
+                "Circle Crop (Profile Style)",
+                "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=500"
+            ),
         )
     }
 
@@ -92,7 +101,7 @@ fun AsyncPicDemoScreen() {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("AsyncPic v2.3 Demo") }
+                    title = { Text("AsyncPic v2.4.0 Demo") }
                 )
             }
         ) { padding ->
@@ -122,7 +131,8 @@ fun AsyncPicDemoScreen() {
                                 else -> ImageSource.Url("")
                             }
                             AsyncPic(
-                                source = source,
+                                source = source, circleCrop = item.title == "Circle Crop (Profile Style)",
+                                diskCachePolicy = if (item.title == "No Cache Demo") CachePolicy.DISABLED else CachePolicy.ENABLED,
                                 placeholderUrl = item.thumbnailUrl,
                                 placeholderType = if (item.title == "Skeleton Loading State") ImageSource.PlaceholderType.SKELETON else ImageSource.PlaceholderType.SHIMMER,
                                 shimmerColor = if (item.title == "Skeleton Loading State") Color(0xFF334155) else Color(0xFFCBD5E1),
