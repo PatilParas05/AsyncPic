@@ -11,6 +11,8 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.graphics.drawable.toBitmap
+import androidx.palette.graphics.Palette
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
@@ -42,6 +44,7 @@ fun AsyncPic(
     contentScale: ContentScale = ContentScale.Crop,
     diskCachePolicy: CachePolicy = CachePolicy.ENABLED,
     memoryCachePolicy: CachePolicy = CachePolicy.ENABLED,
+    onPaletteLoaded:((AsyncPicPalette)->Unit)?=null,
     onSuccess: (() -> Unit)? = null,
     onError: ((Throwable) -> Unit)? = null,
 ) {
@@ -169,15 +172,33 @@ fun AsyncPic(
             contentDescription = contentDescription,
             contentScale = contentScale,
             modifier = Modifier.fillMaxSize(),
-            onSuccess = {onSuccess?.invoke()},
-            onError = {onError?.invoke(it.result.throwable)},
-
-            loading = {
-                    Box(Modifier.fillMaxSize()) {
-                        currentPlaceholder()
+            onSuccess = { state ->
+                onSuccess?.invoke()
+                if (onPaletteLoaded != null) {
+                    val drawable = state.result.drawable
+                    // generate() runs on a background thread automatically
+                    Palette.from(drawable.toBitmap()).generate { palette ->
+                        palette?.let {
+                            val data = AsyncPicPalette(
+                                vibrant = it.vibrantSwatch?.rgb?.let { Color(it) },
+                                dominant = it.dominantSwatch?.rgb?.let { Color(it) },
+                                muted = it.mutedSwatch?.rgb?.let { Color(it) },
+                                lightVibrant = it.lightVibrantSwatch?.rgb?.let { Color(it) },
+                                darkVibrant = it.darkVibrantSwatch?.rgb?.let { Color(it) },
+                            )
+                            onPaletteLoaded.invoke(data)
+                        }
                     }
+                }
             },
-
+            onError = { state ->
+                onError?.invoke(state.result.throwable)
+            },
+            loading = {
+                Box(Modifier.fillMaxSize()) {
+                    currentPlaceholder()
+                }
+            },
             success = {
                 // ALWAYS show animated images immediately
                 if (isAnimated || allowClearImage) {
@@ -186,7 +207,7 @@ fun AsyncPic(
                     // Show placeholder/blur for static images during delay
                     if (source is ImageSource.Progressive && source.thumbnailUrl != null) {
                         // Let thumbnail underneath show
-                    } else if (blurRadius > 0 && !isAnimated) {
+                    } else if (blurRadius > 0 ) {
                         AsyncImage(
                             model = ImageRequest.Builder(context)
                                 .data(imageRequest.data)
@@ -204,7 +225,6 @@ fun AsyncPic(
                     }
                 }
             },
-
             error = {
                 Box(Modifier.fillMaxSize()) {
                     error()

@@ -128,6 +128,7 @@ fun AsyncPicDemoScreen() {
                             .fillMaxWidth()
                             .height(220.dp)
                             .clickable(enabled = item.url != null || item.resId != null) {
+                                adaptiveColor = Color(0xFF1E293B)
                                 selectedImage = item
                             },
                         shape = RoundedCornerShape(16.dp),
@@ -157,7 +158,7 @@ fun AsyncPicDemoScreen() {
                                 modifier = Modifier.fillMaxSize(),
                                 onPaletteLoaded = { palette ->
                                     if (item.title == "Adaptive Color Demo") {
-                                        val targetColor = palette.vibrant ?: palette.darkVibrant ?: palette.dominant ?: palette.muted
+                                        val targetColor = palette.vibrant  ?: palette.lightVibrant ?: palette.darkVibrant ?: palette.dominant ?: palette.muted
                                         targetColor?.let { adaptiveColor = it }
                                     }
                                 },
@@ -191,7 +192,7 @@ fun AsyncPicDemoScreen() {
                     val adaptiveItem = remember {
                         DemoImage(
                             "Adaptive Color Demo",
-                            "https://images.unsplash.com/photo-1775572272743-c0800347f949?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwyMDJ8fHxlbnwwfHx8fHw%3D"
+                            "https://images.unsplash.com/photo-1775027814967-cac2cf014ab7?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHw0M3x8fGVufDB8fHx8fA%3D%3D"
                         )
                     }
 
@@ -211,9 +212,10 @@ fun AsyncPicDemoScreen() {
                                 source = ImageSource.Url(adaptiveItem.url!!),
                                 onPaletteLoaded = { palette ->
                                     val targetColor = palette.vibrant
-                                        ?:palette.darkVibrant
+                                        ?: palette.lightVibrant
                                         ?:palette.dominant
                                         ?:palette.muted
+                                        ?:palette.darkVibrant
 
                                     targetColor?.let { adaptiveColor = it }
                                 },
@@ -262,7 +264,11 @@ fun AsyncPicDemoScreen() {
                         zoomable = true,
                         contentScale = ContentScale.Fit,
                         onPaletteLoaded = { palette ->
-                            val targetColor = palette.vibrant ?: palette.darkVibrant ?: palette.dominant ?: palette.muted
+                            val targetColor = palette.vibrant
+                                ?: palette.lightVibrant
+                                ?: palette.darkVibrant
+                                ?: palette.dominant
+                                ?: palette.muted
                             targetColor?.let { adaptiveColor = it }
                         }
                     )

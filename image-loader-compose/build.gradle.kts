@@ -37,7 +37,7 @@ android {
     }
 }
 group = "com.github.PatilParas05"
-version = "2.4.0"
+version = "2.5.0"
 afterEvaluate {
     publishing {
         publications {
@@ -45,7 +45,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.PatilParas05"
                 artifactId = "asyncpic"
-                version = "2.4.0"
+                version = "2.5.0"
             }
         }
     }
@@ -74,4 +74,5 @@ dependencies {
     implementation("io.coil-kt:coil-base:2.6.0")
     implementation("io.coil-kt:coil-gif:2.6.0")
     implementation("io.coil-kt:coil-svg:2.6.0")
+    implementation("androidx.palette:palette-ktx:1.0.0")
 }
