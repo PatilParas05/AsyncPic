@@ -5,6 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -18,6 +20,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +53,12 @@ data class DemoImage(
 @Composable
 fun AsyncPicDemoScreen() {
     var selectedImage by remember { mutableStateOf<DemoImage?>(null) }
+    var adaptiveColor by remember { mutableStateOf(Color(0xFF1E293B))}
+    val animatedColor by animateColorAsState(
+        targetValue = adaptiveColor,
+        label = "color_animation",
+        animationSpec = tween(durationMillis = 800)
+    )
 
     val items = remember {
         listOf(
@@ -58,7 +68,7 @@ fun AsyncPicDemoScreen() {
             ),
             DemoImage(
                 "Skeleton Loading State",
-                "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=4000&q=100"
+                "https://images.unsplash.com/photo-1776410866978-171cc3033431?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwxNDF8fHxlbnwwfHx8fHw%3D"
             ),
             DemoImage(
                 "Tropical Paradise",
@@ -74,8 +84,8 @@ fun AsyncPicDemoScreen() {
             ),
             DemoImage(
                 "Progressive Loading",
-                "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=2000", // High res
-                "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=50"   // Tiny thumb
+                "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=2000",
+                "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=50"
             ),
             DemoImage(
                 "Animated GIF (Resource)",
@@ -84,7 +94,7 @@ fun AsyncPicDemoScreen() {
             ),
             DemoImage(
                 "Animated WebP Support",
-                "https://www.gstatic.com/webp/animated/1.webp"
+                "https://colinbendell.github.io/webperf/animated-gif-decode/2.webp"
             ),
             DemoImage(
                 "SVG Support (Vector)",
@@ -126,24 +136,36 @@ fun AsyncPicDemoScreen() {
                         Box {
                             val source = when {
                                 item.resId != null -> ImageSource.Resources(item.resId)
-                                item.thumbnailUrl != null -> ImageSource.Progressive(item.url ?: "", item.thumbnailUrl)
+                                item.thumbnailUrl != null -> ImageSource.Progressive(
+                                    item.url ?: "",
+                                    item.thumbnailUrl
+                                )
+
                                 item.url != null -> ImageSource.Url(item.url)
                                 else -> ImageSource.Url("")
                             }
                             AsyncPic(
-                                source = source, circleCrop = item.title == "Circle Crop (Profile Style)",
+                                source = source,
+                                circleCrop = item.title == "Circle Crop (Profile Style)",
                                 diskCachePolicy = if (item.title == "No Cache Demo") CachePolicy.DISABLED else CachePolicy.ENABLED,
                                 placeholderUrl = item.thumbnailUrl,
                                 placeholderType = if (item.title == "Skeleton Loading State") ImageSource.PlaceholderType.SKELETON else ImageSource.PlaceholderType.SHIMMER,
-                                shimmerColor = if (item.title == "Skeleton Loading State") Color(0xFF334155) else Color(0xFFCBD5E1),
+                                shimmerColor = if (item.title == "Skeleton Loading State") Color(
+                                    0xFF334155
+                                ) else Color(0xFFCBD5E1),
                                 blurRadius = if (index == 4) 15 else 0,
                                 modifier = Modifier.fillMaxSize(),
-                                // minShimmerTime controls when high-res replaces thumbnail
+                                onPaletteLoaded = { palette ->
+                                    if (item.title == "Adaptive Color Demo") {
+                                        val targetColor = palette.vibrant ?: palette.darkVibrant ?: palette.dominant ?: palette.muted
+                                        targetColor?.let { adaptiveColor = it }
+                                    }
+                                },
                                 minShimmerTime = when (item.title) {
-                                    "Skeleton Loading State" -> 5000L // 5 seconds of pulsing
-                                    "Loading / Shimmer State" -> 8000L // 8 seconds of shimmering
-                                    "Progressive Loading" -> 5000L     // 5 seconds of blurred thumbnail
-                                    "Vibrant Mountain", "Tropical Paradise" -> 2000L // Standard delay
+                                    "Skeleton Loading State" -> 5000L
+                                    "Loading / Shimmer State" -> 8000L
+                                    "Progressive Loading" -> 5000L
+                                    "Vibrant Mountain", "Tropical Paradise" -> 2000L
                                     else -> 0L
                                 }
                             )
@@ -165,6 +187,55 @@ fun AsyncPicDemoScreen() {
                         }
                     }
                 }
+                item {
+                    val adaptiveItem = remember {
+                        DemoImage(
+                            "Adaptive Color Demo",
+                            "https://images.unsplash.com/photo-1775572272743-c0800347f949?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwyMDJ8fHxlbnwwfHx8fHw%3D"
+                        )
+                    }
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(220.dp)
+                            .clickable {
+                                selectedImage = adaptiveItem
+                            },
+                        colors = CardDefaults.cardColors(containerColor = animatedColor),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(4.dp)
+                    ) {
+                        Box {
+                            AsyncPic(
+                                source = ImageSource.Url(adaptiveItem.url!!),
+                                onPaletteLoaded = { palette ->
+                                    val targetColor = palette.vibrant
+                                        ?:palette.darkVibrant
+                                        ?:palette.dominant
+                                        ?:palette.muted
+
+                                    targetColor?.let { adaptiveColor = it }
+                                },
+                                modifier = Modifier.fillMaxSize()
+                            )
+
+                            Surface(
+                                modifier = Modifier
+                                    .align(Alignment.BottomStart)
+                                    .fillMaxWidth(),
+                                color = Color.Black.copy(alpha = 0.6f)
+                            ) {
+                                Text(
+                                    "Adaptive Color Demo",
+                                    modifier = Modifier.padding(12.dp),
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -179,7 +250,7 @@ fun AsyncPicDemoScreen() {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black)
+                        .background(animatedColor) // Use adaptive background
                 ) {
                     val source = when {
                         image.resId != null -> ImageSource.Resources(image.resId)
@@ -189,7 +260,11 @@ fun AsyncPicDemoScreen() {
                         source = source,
                         modifier = Modifier.fillMaxSize(),
                         zoomable = true,
-                        contentScale = ContentScale.Fit
+                        contentScale = ContentScale.Fit,
+                        onPaletteLoaded = { palette ->
+                            val targetColor = palette.vibrant ?: palette.darkVibrant ?: palette.dominant ?: palette.muted
+                            targetColor?.let { adaptiveColor = it }
+                        }
                     )
 
                     IconButton(
