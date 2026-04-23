@@ -1,6 +1,7 @@
 package com.paraspatil.compose
 
 import android.os.Build
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
@@ -11,6 +12,8 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.painterResource
 import androidx.core.graphics.drawable.toBitmap
 import androidx.palette.graphics.Palette
 import coil.ImageLoader
@@ -25,7 +28,7 @@ import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import kotlinx.coroutines.delay
 
-//AsyncPic V2.4.0 - Cache control and SVG support
+//AsyncPic V2.6.0 - Cache control and SVG support
 @Composable
 fun AsyncPic(
     source: ImageSource,
@@ -49,6 +52,7 @@ fun AsyncPic(
     onError: ((Throwable) -> Unit)? = null,
 ) {
     val context = LocalContext.current
+    val isPreview = LocalInspectionMode.current
 
     // Create custom image Loader With GIF/WEBP Support
     val gifImageLoader = remember {
@@ -116,14 +120,17 @@ fun AsyncPic(
                 source.finalUrl.endsWith(".gif", true) || source.finalUrl.endsWith(".webp", true) || source.finalUrl.endsWith(".svg", true)
             }
             is ImageSource.Resources -> {
+                // Assume resources could be animated if they are from raw or specific drawable types
+                // For simplicity, we could return true or implement more complex logic
                 true
             }
         }
     }
-    val currentPlaceholder = @Composable{
-        when(placeholderType){
+
+    val currentPlaceholder = @Composable {
+        when (placeholderType) {
             ImageSource.PlaceholderType.SHIMMER -> DefaultShimmer()
-            ImageSource.PlaceholderType.SKELETON -> SkeletonPlaceholder(color=shimmerColor)
+            ImageSource.PlaceholderType.SKELETON -> SkeletonPlaceholder(color = shimmerColor)
             ImageSource.PlaceholderType.NONE -> {}
         }
     }
@@ -143,93 +150,113 @@ fun AsyncPic(
         }
     }
 
-    Box(modifier = modifier
-        .then(if (!zoomable) Modifier.clip(shape) else Modifier)
-        .then(if (zoomable) Modifier.zoomable() else Modifier)
+    Box(
+        modifier = modifier
+            .then(if (!zoomable) Modifier.clip(shape) else Modifier)
+            .then(if (zoomable) Modifier.zoomable() else Modifier)
     ) {
-        // Thumbnail/Blurred layer (only for Progressive)
-        if (source is ImageSource.Progressive && source.thumbnailUrl != null) {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(source.thumbnailUrl)
-                    .crossfade(true)
-                    .apply {
-                        if (blurRadius > 0) {
-                            transformations(CustomBlurTransformation(context, blurRadius.toFloat()))
+        if (isPreview) {
+            /**
+             * CORRECTED PREVIEW LOGIC:
+             * We use a standard Image component because AsyncImage/Coil
+             * often shows a blank box in the Android Studio Design Tab.
+             */
+            Image(
+                painter = painterResource(id = R.drawable.asyncpic), // Use your local test resource
+                contentDescription = "Preview Mode",
+                contentScale = contentScale,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (circleCrop) Modifier.clip(androidx.compose.foundation.shape.CircleShape)
+                        else Modifier
+                    )
+            )
+        } else {
+            // Thumbnail/Blurred layer (only for Progressive)
+            if (source is ImageSource.Progressive && source.thumbnailUrl != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(source.thumbnailUrl)
+                        .crossfade(true)
+                        .apply {
+                            if (blurRadius > 0) {
+                                transformations(CustomBlurTransformation(context, blurRadius.toFloat()))
+                            }
+                        }
+                        .build(),
+                    contentDescription = null,
+                    contentScale = contentScale,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            // High-res layer with GIF-enabled loader
+            SubcomposeAsyncImage(
+                model = imageRequest,
+                imageLoader = gifImageLoader,  // Use The GIF-enabled Loader
+                contentDescription = contentDescription,
+                contentScale = contentScale,
+                modifier = Modifier.fillMaxSize(),
+                onSuccess = { state ->
+                    onSuccess?.invoke()
+                    if (onPaletteLoaded != null) {
+                        val drawable = state.result.drawable
+                        // generate() runs on a background thread automatically
+                        Palette.from(drawable.toBitmap()).generate { palette ->
+                            palette?.let {
+                                val data = AsyncPicPalette(
+                                    vibrant = it.vibrantSwatch?.rgb?.let { Color(it) },
+                                    dominant = it.dominantSwatch?.rgb?.let { Color(it) },
+                                    muted = it.mutedSwatch?.rgb?.let { Color(it) },
+                                    lightVibrant = it.lightVibrantSwatch?.rgb?.let { Color(it) },
+                                    darkVibrant = it.darkVibrantSwatch?.rgb?.let { Color(it) },
+                                )
+                                onPaletteLoaded.invoke(data)
+                            }
                         }
                     }
-                    .build(),
-                contentDescription = null,
-                contentScale = contentScale,
-                modifier = Modifier.fillMaxSize()
+                },
+                onError = { state ->
+                    onError?.invoke(state.result.throwable)
+                },
+                loading = {
+                    Box(Modifier.fillMaxSize()) {
+                        currentPlaceholder()
+                    }
+                },
+                success = {
+                    // ALWAYS show animated images immediately
+                    if (isAnimated || allowClearImage) {
+                        SubcomposeAsyncImageContent()
+                    } else {
+                        // Show placeholder/blur for static images during delay
+                        if (source is ImageSource.Progressive && source.thumbnailUrl != null) {
+                            // Let thumbnail underneath show
+                        } else if (blurRadius > 0) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(context)
+                                    .data(imageRequest.data)
+                                    .transformations(CustomBlurTransformation(context, blurRadius.toFloat()))
+                                    .build(),
+                                imageLoader = gifImageLoader,
+                                contentDescription = null,
+                                contentScale = contentScale,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Box(Modifier.fillMaxSize()) {
+                                currentPlaceholder()
+                            }
+                        }
+                    }
+                },
+                error = {
+                    Box(Modifier.fillMaxSize()) {
+                        error()
+                    }
+                }
             )
         }
-
-        // High-res layer with GIF-enabled loader
-        SubcomposeAsyncImage(
-            model = imageRequest,
-            imageLoader = gifImageLoader,  // Use The GIF-enabled Loader
-            contentDescription = contentDescription,
-            contentScale = contentScale,
-            modifier = Modifier.fillMaxSize(),
-            onSuccess = { state ->
-                onSuccess?.invoke()
-                if (onPaletteLoaded != null) {
-                    val drawable = state.result.drawable
-                    // generate() runs on a background thread automatically
-                    Palette.from(drawable.toBitmap()).generate { palette ->
-                        palette?.let {
-                            val data = AsyncPicPalette(
-                                vibrant = it.vibrantSwatch?.rgb?.let { Color(it) },
-                                dominant = it.dominantSwatch?.rgb?.let { Color(it) },
-                                muted = it.mutedSwatch?.rgb?.let { Color(it) },
-                                lightVibrant = it.lightVibrantSwatch?.rgb?.let { Color(it) },
-                                darkVibrant = it.darkVibrantSwatch?.rgb?.let { Color(it) },
-                            )
-                            onPaletteLoaded.invoke(data)
-                        }
-                    }
-                }
-            },
-            onError = { state ->
-                onError?.invoke(state.result.throwable)
-            },
-            loading = {
-                Box(Modifier.fillMaxSize()) {
-                    currentPlaceholder()
-                }
-            },
-            success = {
-                // ALWAYS show animated images immediately
-                if (isAnimated || allowClearImage) {
-                    SubcomposeAsyncImageContent()
-                } else {
-                    // Show placeholder/blur for static images during delay
-                    if (source is ImageSource.Progressive && source.thumbnailUrl != null) {
-                        // Let thumbnail underneath show
-                    } else if (blurRadius > 0 ) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(context)
-                                .data(imageRequest.data)
-                                .transformations(CustomBlurTransformation(context, blurRadius.toFloat()))
-                                .build(),
-                            imageLoader = gifImageLoader,
-                            contentDescription = null,
-                            contentScale = contentScale,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        Box(Modifier.fillMaxSize()) {
-                            currentPlaceholder()
-                        }
-                    }
-                }
-            },
-            error = {
-                Box(Modifier.fillMaxSize()) {
-                    error()
-                }
-            }
-        )
     }
 }

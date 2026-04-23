@@ -37,7 +37,7 @@ android {
     }
 }
 group = "com.github.PatilParas05"
-version = "2.5.0"
+version = "2.6.0"
 afterEvaluate {
     publishing {
         publications {
@@ -45,7 +45,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.github.PatilParas05"
                 artifactId = "asyncpic"
-                version = "2.5.0"
+                version = "2.6.0"
             }
         }
     }

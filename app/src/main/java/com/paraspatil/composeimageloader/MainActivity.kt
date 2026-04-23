@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.request.CachePolicy
 import com.paraspatil.compose.AsyncPic
@@ -89,8 +90,7 @@ fun AsyncPicDemoScreen() {
             ),
             DemoImage(
                 "Animated GIF (Resource)",
-                url = null,
-                resId = R.drawable.test00
+                "https://media.tenor.com/b0ZXAm867pYAAAAM/jujutsu-kaisen-season-3.gif"
             ),
             DemoImage(
                 "Animated WebP Support",
@@ -111,7 +111,7 @@ fun AsyncPicDemoScreen() {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("AsyncPic v2.4.0 Demo") }
+                    title = { Text("AsyncPic v2.6.0 Demo") }
                 )
             }
         ) { padding ->
@@ -307,4 +307,30 @@ fun DemoTheme(content: @Composable () -> Unit) {
         ),
         content = content
     )
+}
+@Preview(showBackground = true, name = "AsyncPic Default Preview")
+@Composable
+fun AsyncPicPreview() {
+    DemoTheme {
+        Box(modifier = Modifier.size(300.dp).padding(16.dp)) {
+            AsyncPic(
+                source = ImageSource.Url("https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1080&q=80"),
+                placeholderType = ImageSource.PlaceholderType.SKELETON,
+                shape = RoundedCornerShape(16.dp)
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "AsyncPic Circle Preview")
+@Composable
+fun AsyncPicCirclePreview() {
+    DemoTheme {
+        Box(modifier = Modifier.size(150.dp).padding(16.dp)) {
+            AsyncPic(
+                source = ImageSource.Url("https://any-url.com/profile.jpg"),
+                circleCrop = true
+            )
+        }
+    }
 }
