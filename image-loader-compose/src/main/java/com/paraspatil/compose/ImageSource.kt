@@ -15,4 +15,11 @@ sealed class ImageSource {
         SKELETON,
         NONE
     }
+    enum class ShimmerDirection{
+        DIAGONAL,
+        LTR,//left to right
+        RTL,//right to left
+        TTB,//top to bottom
+        BTT//bottom to top
+    }
 }

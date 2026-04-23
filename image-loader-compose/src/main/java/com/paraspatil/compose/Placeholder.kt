@@ -16,34 +16,58 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun DefaultShimmer() {
+fun DefaultShimmer(
+    color: Color = Color(0xFFE2E8F0),
+    direction: ImageSource.ShimmerDirection = ImageSource.ShimmerDirection.DIAGONAL
+) {
     val shimmerColors = listOf(
-        Color(0xFFCBD5E1), // slate 300 (base)
-        Color(0xFFF8FAFC), // slate 50 (highlight - very bright)
-        Color(0xFFCBD5E1), // slate 300 (base)
+        color.copy(alpha = 0.9f),
+        color.copy(alpha = 0.2f),
+        color.copy(alpha = 0.9f),
     )
 
     val transition = rememberInfiniteTransition(label = "shimmer_transition")
 
     val translateAnim by transition.animateFloat(
-        initialValue = -1000f,
-        targetValue = 2000f,
+        initialValue = 0f,
+        targetValue = 1500f,
         animationSpec = infiniteRepeatable(
             animation = tween(
                 durationMillis = 1300,
-                easing = FastOutSlowInEasing
+                easing = CubicBezierEasing(0.4f, 0.0f, 0.2f, 1f)
             ),
             repeatMode = RepeatMode.Restart
         ),
         label = "shimmer_offset"
     )
 
-    // animated offset diagonally
-    val brush = Brush.linearGradient(
-        colors = shimmerColors,
-        start = Offset(translateAnim - 500f, translateAnim - 500f),
-        end = Offset(translateAnim, translateAnim)
-    )
+    val brush = when (direction) {
+        ImageSource.ShimmerDirection.DIAGONAL -> Brush.linearGradient(
+            colors = shimmerColors,
+            start = Offset(translateAnim - 700f, translateAnim - 700f),
+            end = Offset(translateAnim, translateAnim)
+        )
+        ImageSource.ShimmerDirection.LTR -> Brush.linearGradient(
+            colors = shimmerColors,
+            start = Offset(translateAnim - 700f, 0f),
+            end = Offset(translateAnim, 0f)
+        )
+        ImageSource.ShimmerDirection.RTL -> Brush.linearGradient(
+            colors = shimmerColors,
+            start = Offset(1000f - translateAnim + 700f, 0f),
+            end = Offset(1000f - translateAnim, 0f)
+        )
+        ImageSource.ShimmerDirection.TTB -> Brush.linearGradient(
+            colors = shimmerColors,
+            start = Offset(0f, translateAnim - 700f),
+            end = Offset(0f, translateAnim)
+        )
+        ImageSource.ShimmerDirection.BTT -> Brush.linearGradient(
+            colors = shimmerColors,
+            start = Offset(0f, 1500f - translateAnim + 700f),
+            end = Offset(0f, 1500f - translateAnim)
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -68,8 +92,9 @@ fun DefaultError() {
         )
     }
 }
+
 @Composable
-fun SkeletonPlaceholder(color: Color=Color(0xFFE2E8F0)){
+fun SkeletonPlaceholder(color: Color = Color(0xFFE2E8F0)) {
     val transition = rememberInfiniteTransition(label = "skeleton")
     val alpha by transition.animateFloat(
         initialValue = 0.3f,
@@ -79,5 +104,9 @@ fun SkeletonPlaceholder(color: Color=Color(0xFFE2E8F0)){
             repeatMode = RepeatMode.Reverse
         ), label = "pulse"
     )
-    Box(Modifier.fillMaxSize().background(color.copy(alpha = alpha)))
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(color.copy(alpha = alpha))
+    )
 }

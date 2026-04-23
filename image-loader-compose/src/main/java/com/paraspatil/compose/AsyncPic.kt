@@ -28,7 +28,7 @@ import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import kotlinx.coroutines.delay
 
-//AsyncPic V2.6.0 - Cache control and SVG support
+//AsyncPic V2.7.0 - Directional Shimmer
 @Composable
 fun AsyncPic(
     source: ImageSource,
@@ -40,7 +40,8 @@ fun AsyncPic(
     circleCrop: Boolean = false,
     placeholder: @Composable () -> Unit = { DefaultShimmer() },
     placeholderType: ImageSource.PlaceholderType = ImageSource.PlaceholderType.SHIMMER,//Default to shimmer
-    shimmerColor: Color = Color(0xFFCBD5E1),
+    shimmerColor: Color = Color(0xFFF1F5F9),
+    shimmerDirection: ImageSource.ShimmerDirection = ImageSource.ShimmerDirection.DIAGONAL,
     error: @Composable () -> Unit = { DefaultError() },
     zoomable: Boolean = false,
     minShimmerTime: Long = 1000,
@@ -129,7 +130,10 @@ fun AsyncPic(
 
     val currentPlaceholder = @Composable {
         when (placeholderType) {
-            ImageSource.PlaceholderType.SHIMMER -> DefaultShimmer()
+            ImageSource.PlaceholderType.SHIMMER -> DefaultShimmer(
+                color = shimmerColor,
+                direction = shimmerDirection
+            )
             ImageSource.PlaceholderType.SKELETON -> SkeletonPlaceholder(color = shimmerColor)
             ImageSource.PlaceholderType.NONE -> {}
         }

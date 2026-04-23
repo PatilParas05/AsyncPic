@@ -104,6 +104,10 @@ fun AsyncPicDemoScreen() {
                 "Circle Crop (Profile Style)",
                 "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=500"
             ),
+            DemoImage(
+                "Vertical Shimmer (TTB)",
+                "https://httpstat.us/200?sleep=10000"
+            ),
         )
     }
 
@@ -151,9 +155,9 @@ fun AsyncPicDemoScreen() {
                                 diskCachePolicy = if (item.title == "No Cache Demo") CachePolicy.DISABLED else CachePolicy.ENABLED,
                                 placeholderUrl = item.thumbnailUrl,
                                 placeholderType = if (item.title == "Skeleton Loading State") ImageSource.PlaceholderType.SKELETON else ImageSource.PlaceholderType.SHIMMER,
-                                shimmerColor = if (item.title == "Skeleton Loading State") Color(
-                                    0xFF334155
-                                ) else Color(0xFFCBD5E1),
+                                shimmerColor = if (item.title == "Skeleton Loading State")
+                                    Color(0xFF1E293B) else Color(0xFFF1F5F9),
+                                shimmerDirection = if (item.title == "Vertical Shimmer (TTB)") ImageSource.ShimmerDirection.TTB else ImageSource.ShimmerDirection.DIAGONAL,
                                 blurRadius = if (index == 4) 15 else 0,
                                 modifier = Modifier.fillMaxSize(),
                                 onPaletteLoaded = { palette ->
