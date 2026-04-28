@@ -108,6 +108,10 @@ fun AsyncPicDemoScreen() {
                 "Vertical Shimmer (TTB)",
                 "https://httpstat.us/200?sleep=10000"
             ),
+            DemoImage(
+                "Shimmer Morph Demo",
+                "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1080" // Very colorful gradient
+            )
         )
     }
 
@@ -171,6 +175,7 @@ fun AsyncPicDemoScreen() {
                                     "Loading / Shimmer State" -> 8000L
                                     "Progressive Loading" -> 5000L
                                     "Vibrant Mountain", "Tropical Paradise" -> 2000L
+                                    "Shimmer Morph Demo" -> 4000L
                                     else -> 0L
                                 }
                             )
