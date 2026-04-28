@@ -1,7 +1,10 @@
 package com.paraspatil.compose
 
+import android.graphics.Bitmap
 import android.os.Build
-import androidx.compose.foundation.Image
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
@@ -13,7 +16,6 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.res.painterResource
 import androidx.core.graphics.drawable.toBitmap
 import androidx.palette.graphics.Palette
 import coil.ImageLoader
@@ -28,7 +30,7 @@ import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import kotlinx.coroutines.delay
 
-//AsyncPic V2.7.0 - Directional Shimmer
+//AsyncPic V2.7.5 - Advanced Shimmer Morph (Fixed Hardware Bitmap Issue)
 @Composable
 fun AsyncPic(
     source: ImageSource,
@@ -54,6 +56,9 @@ fun AsyncPic(
 ) {
     val context = LocalContext.current
     val isPreview = LocalInspectionMode.current
+
+    // State to hold the dominant color from the image for morphing
+    var activeShimmerColor by remember(source) { mutableStateOf(shimmerColor) }
 
     // Create custom image Loader With GIF/WEBP Support
     val gifImageLoader = remember {
@@ -121,20 +126,25 @@ fun AsyncPic(
                 source.finalUrl.endsWith(".gif", true) || source.finalUrl.endsWith(".webp", true) || source.finalUrl.endsWith(".svg", true)
             }
             is ImageSource.Resources -> {
-                // Assume resources could be animated if they are from raw or specific drawable types
-                // For simplicity, we could return true or implement more complex logic
                 true
             }
         }
     }
 
+    // Smoothly animate the shimmer color when it morphs from base to dominant
+    val animatedMorphColor by animateColorAsState(
+        targetValue = activeShimmerColor,
+        animationSpec = tween(durationMillis = 1000),
+        label = "shimmer_morph"
+    )
+
     val currentPlaceholder = @Composable {
         when (placeholderType) {
             ImageSource.PlaceholderType.SHIMMER -> DefaultShimmer(
-                color = shimmerColor,
+                color = animatedMorphColor,
                 direction = shimmerDirection
             )
-            ImageSource.PlaceholderType.SKELETON -> SkeletonPlaceholder(color = shimmerColor)
+            ImageSource.PlaceholderType.SKELETON -> SkeletonPlaceholder(color = animatedMorphColor)
             ImageSource.PlaceholderType.NONE -> {}
         }
     }
@@ -144,10 +154,8 @@ fun AsyncPic(
 
     LaunchedEffect(source) {
         if (isAnimated) {
-            // Show animated content immediately
             allowClearImage = true
         } else {
-            // Apply delay only for static images
             allowClearImage = false
             delay(minShimmerTime)
             allowClearImage = true
@@ -160,21 +168,11 @@ fun AsyncPic(
             .then(if (zoomable) Modifier.zoomable() else Modifier)
     ) {
         if (isPreview) {
-            /**
-             * CORRECTED PREVIEW LOGIC:
-             * We use a standard Image component because AsyncImage/Coil
-             * often shows a blank box in the Android Studio Design Tab.
-             */
-            Image(
-                painter = painterResource(id = R.drawable.asyncpic), // Use your local test resource
-                contentDescription = "Preview Mode",
-                contentScale = contentScale,
-                modifier = Modifier
+            // Static preview content - avoid using R.drawable which might not exist in library
+            Box(
+                Modifier
                     .fillMaxSize()
-                    .then(
-                        if (circleCrop) Modifier.clip(androidx.compose.foundation.shape.CircleShape)
-                        else Modifier
-                    )
+                    .background(shimmerColor)
             )
         } else {
             // Thumbnail/Blurred layer (only for Progressive)
@@ -198,25 +196,36 @@ fun AsyncPic(
             // High-res layer with GIF-enabled loader
             SubcomposeAsyncImage(
                 model = imageRequest,
-                imageLoader = gifImageLoader,  // Use The GIF-enabled Loader
+                imageLoader = gifImageLoader,
                 contentDescription = contentDescription,
                 contentScale = contentScale,
                 modifier = Modifier.fillMaxSize(),
                 onSuccess = { state ->
                     onSuccess?.invoke()
-                    if (onPaletteLoaded != null) {
-                        val drawable = state.result.drawable
-                        // generate() runs on a background thread automatically
-                        Palette.from(drawable.toBitmap()).generate { palette ->
-                            palette?.let {
-                                val data = AsyncPicPalette(
-                                    vibrant = it.vibrantSwatch?.rgb?.let { Color(it) },
-                                    dominant = it.dominantSwatch?.rgb?.let { Color(it) },
-                                    muted = it.mutedSwatch?.rgb?.let { Color(it) },
-                                    lightVibrant = it.lightVibrantSwatch?.rgb?.let { Color(it) },
-                                    darkVibrant = it.darkVibrantSwatch?.rgb?.let { Color(it) },
-                                )
-                                onPaletteLoaded.invoke(data)
+                    
+                    // Extracting Palette for morphing
+                    val drawable = state.result.drawable
+                    // CRITICAL: Convert to software bitmap so Palette can read it
+                    val bitmap = drawable.toBitmap().copy(Bitmap.Config.ARGB_8888, false)
+                    
+                    Palette.from(bitmap).generate { palette ->
+                        palette?.let {
+                            val data = AsyncPicPalette(
+                                vibrant = it.vibrantSwatch?.rgb?.let { Color(it) },
+                                dominant = it.dominantSwatch?.rgb?.let { Color(it) },
+                                muted = it.mutedSwatch?.rgb?.let { Color(it) },
+                                lightVibrant = it.lightVibrantSwatch?.rgb?.let { Color(it) },
+                                darkVibrant = it.darkVibrantSwatch?.rgb?.let { Color(it) },
+                            )
+                            onPaletteLoaded?.invoke(data)
+                            
+                            // SHIMMER MORPH: Prioritize vibrant colors for a better visual effect
+                            val morphTarget = it.vibrantSwatch?.rgb?.let { Color(it) }
+                                ?: it.lightVibrantSwatch?.rgb?.let { Color(it) }
+                                ?: it.dominantSwatch?.rgb?.let { Color(it) }
+
+                            morphTarget?.let { newColor ->
+                                activeShimmerColor = newColor
                             }
                         }
                     }
@@ -230,11 +239,9 @@ fun AsyncPic(
                     }
                 },
                 success = {
-                    // ALWAYS show animated images immediately
                     if (isAnimated || allowClearImage) {
                         SubcomposeAsyncImageContent()
                     } else {
-                        // Show placeholder/blur for static images during delay
                         if (source is ImageSource.Progressive && source.thumbnailUrl != null) {
                             // Let thumbnail underneath show
                         } else if (blurRadius > 0) {
