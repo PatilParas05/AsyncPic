@@ -30,7 +30,7 @@ import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import kotlinx.coroutines.delay
 
-//AsyncPic V2.7.5 - Advanced Shimmer Morph (Fixed Hardware Bitmap Issue)
+//AsyncPic V2.9.0 - Scroll Effect with Parallax
 @Composable
 fun AsyncPic(
     source: ImageSource,
@@ -53,6 +53,7 @@ fun AsyncPic(
     onPaletteLoaded:((AsyncPicPalette)->Unit)?=null,
     onSuccess: (() -> Unit)? = null,
     onError: ((Throwable) -> Unit)? = null,
+    parallaxIntensity: Float = 0f
 ) {
     val context = LocalContext.current
     val isPreview = LocalInspectionMode.current
@@ -189,7 +190,9 @@ fun AsyncPic(
                         .build(),
                     contentDescription = null,
                     contentScale = contentScale,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .parallaxLayout(parallaxIntensity)
                 )
             }
 
@@ -199,15 +202,17 @@ fun AsyncPic(
                 imageLoader = gifImageLoader,
                 contentDescription = contentDescription,
                 contentScale = contentScale,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .parallaxLayout(parallaxIntensity),
                 onSuccess = { state ->
                     onSuccess?.invoke()
-                    
+
                     // Extracting Palette for morphing
                     val drawable = state.result.drawable
                     // CRITICAL: Convert to software bitmap so Palette can read it
                     val bitmap = drawable.toBitmap().copy(Bitmap.Config.ARGB_8888, false)
-                    
+
                     Palette.from(bitmap).generate { palette ->
                         palette?.let {
                             val data = AsyncPicPalette(
@@ -218,7 +223,7 @@ fun AsyncPic(
                                 darkVibrant = it.darkVibrantSwatch?.rgb?.let { Color(it) },
                             )
                             onPaletteLoaded?.invoke(data)
-                            
+
                             // SHIMMER MORPH: Prioritize vibrant colors for a better visual effect
                             val morphTarget = it.vibrantSwatch?.rgb?.let { Color(it) }
                                 ?: it.lightVibrantSwatch?.rgb?.let { Color(it) }

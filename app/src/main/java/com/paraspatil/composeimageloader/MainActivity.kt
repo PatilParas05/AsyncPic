@@ -111,6 +111,10 @@ fun AsyncPicDemoScreen() {
             DemoImage(
                 "Shimmer Morph Demo",
                 "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1080" // Very colorful gradient
+            ),
+            DemoImage(
+                "Parallax Scroll Demo",
+                "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1080"
             )
         )
     }
@@ -119,7 +123,7 @@ fun AsyncPicDemoScreen() {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("AsyncPic v2.6.0 Demo") }
+                    title = { Text("AsyncPic v2.9.0 Demo") }
                 )
             }
         ) { padding ->
@@ -155,6 +159,7 @@ fun AsyncPicDemoScreen() {
                             }
                             AsyncPic(
                                 source = source,
+                                parallaxIntensity = if (item.title == "Parallax Scroll Demo") 0.3f else 0f,
                                 circleCrop = item.title == "Circle Crop (Profile Style)",
                                 diskCachePolicy = if (item.title == "No Cache Demo") CachePolicy.DISABLED else CachePolicy.ENABLED,
                                 placeholderUrl = item.thumbnailUrl,
@@ -163,7 +168,7 @@ fun AsyncPicDemoScreen() {
                                     Color(0xFF1E293B) else Color(0xFFF1F5F9),
                                 shimmerDirection = if (item.title == "Vertical Shimmer (TTB)") ImageSource.ShimmerDirection.TTB else ImageSource.ShimmerDirection.DIAGONAL,
                                 blurRadius = if (index == 4) 15 else 0,
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier.fillMaxSize().height(250.dp),
                                 onPaletteLoaded = { palette ->
                                     if (item.title == "Adaptive Color Demo") {
                                         val targetColor = palette.vibrant  ?: palette.lightVibrant ?: palette.darkVibrant ?: palette.dominant ?: palette.muted
