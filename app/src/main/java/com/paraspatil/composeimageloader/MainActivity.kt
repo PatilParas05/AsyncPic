@@ -30,7 +30,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.request.CachePolicy
 import com.paraspatil.compose.AsyncPic
+import com.paraspatil.compose.AsyncPicTransition
 import com.paraspatil.compose.ImageSource
+import com.paraspatil.compose.RevealType
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,7 +49,8 @@ data class DemoImage(
     val title: String,
     val url: String?,
     val thumbnailUrl: String? = null,
-    val resId: Int? = null
+    val resId: Int? = null,
+    val transition: AsyncPicTransition = AsyncPicTransition.Standard
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -115,6 +118,21 @@ fun AsyncPicDemoScreen() {
             DemoImage(
                 "Parallax Scroll Demo",
                 "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1080"
+            ),
+            DemoImage(
+                "V3.0: Dissolve Reveal",
+                "https://images.unsplash.com/photo-1534067783941-51c9c23ecefd?w=1080",
+                transition = AsyncPicTransition.ShaderReveal(type = RevealType.DISSOLVE, durationMillis = 2000)
+            ),
+            DemoImage(
+                "V3.0: Pixelate Reveal",
+                "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1080",
+                transition = AsyncPicTransition.ShaderReveal(type = RevealType.PIXELATE, durationMillis = 2000)
+            ),
+            DemoImage(
+                "V3.0: Wipe Reveal",
+                "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=1080",
+                transition = AsyncPicTransition.ShaderReveal(type = RevealType.WIPE, durationMillis = 2000)
             )
         )
     }
@@ -123,7 +141,7 @@ fun AsyncPicDemoScreen() {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("AsyncPic v2.9.0 Demo") }
+                    title = { Text("AsyncPic v3.0.0 Demo") }
                 )
             }
         ) { padding ->
@@ -159,6 +177,7 @@ fun AsyncPicDemoScreen() {
                             }
                             AsyncPic(
                                 source = source,
+                                transition = item.transition,
                                 parallaxIntensity = if (item.title == "Parallax Scroll Demo") 0.3f else 0f,
                                 circleCrop = item.title == "Circle Crop (Profile Style)",
                                 diskCachePolicy = if (item.title == "No Cache Demo") CachePolicy.DISABLED else CachePolicy.ENABLED,
@@ -175,12 +194,13 @@ fun AsyncPicDemoScreen() {
                                         targetColor?.let { adaptiveColor = it }
                                     }
                                 },
-                                minShimmerTime = when (item.title) {
-                                    "Skeleton Loading State" -> 5000L
-                                    "Loading / Shimmer State" -> 8000L
-                                    "Progressive Loading" -> 5000L
-                                    "Vibrant Mountain", "Tropical Paradise" -> 2000L
-                                    "Shimmer Morph Demo" -> 4000L
+                                minShimmerTime = when {
+                                    item.title.contains("Reveal") -> 2000L
+                                    item.title == "Skeleton Loading State" -> 5000L
+                                    item.title == "Loading / Shimmer State" -> 8000L
+                                    item.title == "Progressive Loading" -> 5000L
+                                    item.title == "Vibrant Mountain" || item.title == "Tropical Paradise" -> 2000L
+                                    item.title == "Shimmer Morph Demo" -> 4000L
                                     else -> 0L
                                 }
                             )
@@ -270,13 +290,19 @@ fun AsyncPicDemoScreen() {
                 ) {
                     val source = when {
                         image.resId != null -> ImageSource.Resources(image.resId)
-                        else -> ImageSource.Url(image.url ?: "")
+                        image.thumbnailUrl != null -> ImageSource.Progressive(
+                            image.url ?: "",
+                            image.thumbnailUrl
+                        )
+                        image.url != null -> ImageSource.Url(image.url)
+                        else -> ImageSource.Url("")
                     }
                     AsyncPic(
                         source = source,
-                        modifier = Modifier.fillMaxSize(),
-                        zoomable = true,
                         contentScale = ContentScale.Fit,
+                        zoomable = true,
+                        transition = image.transition,
+                        modifier = Modifier.fillMaxSize(),
                         onPaletteLoaded = { palette ->
                             val targetColor = palette.vibrant
                                 ?: palette.lightVibrant
@@ -290,8 +316,9 @@ fun AsyncPicDemoScreen() {
                     IconButton(
                         onClick = { selectedImage = null },
                         modifier = Modifier
-                            .align(Alignment.TopEnd)
                             .padding(16.dp)
+                            .align(Alignment.TopEnd)
+                            .background(Color.Black.copy(alpha = 0.4f), CircleShape)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,

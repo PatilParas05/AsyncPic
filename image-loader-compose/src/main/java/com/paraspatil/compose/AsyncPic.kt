@@ -1,8 +1,10 @@
 package com.paraspatil.compose
 
+import android.R.attr.label
 import android.graphics.Bitmap
 import android.os.Build
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -13,6 +15,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.asComposeRenderEffect
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -30,7 +34,7 @@ import coil.request.ImageRequest
 import coil.transform.CircleCropTransformation
 import kotlinx.coroutines.delay
 
-//AsyncPic V2.9.0 - Scroll Effect with Parallax
+//AsyncPic V3.0.0 - AGSL Shader Cinematic Reveals
 @Composable
 fun AsyncPic(
     source: ImageSource,
@@ -53,13 +57,23 @@ fun AsyncPic(
     onPaletteLoaded:((AsyncPicPalette)->Unit)?=null,
     onSuccess: (() -> Unit)? = null,
     onError: ((Throwable) -> Unit)? = null,
-    parallaxIntensity: Float = 0f
+    parallaxIntensity: Float = 0f,
+    transition: AsyncPicTransition = AsyncPicTransition.Standard
 ) {
     val context = LocalContext.current
     val isPreview = LocalInspectionMode.current
 
     // State to hold the dominant color from the image for morphing
     var activeShimmerColor by remember(source) { mutableStateOf(shimmerColor) }
+
+    var revealProgress by remember(source) { mutableStateOf(0f) }
+
+    val animatedReveal by animateFloatAsState(
+        targetValue = revealProgress,
+        animationSpec = if (transition is AsyncPicTransition.ShaderReveal)
+            tween(transition.durationMillis) else tween(0),
+        label = "shader_reveal"
+    )
 
     // Create custom image Loader With GIF/WEBP Support
     val gifImageLoader = remember {
@@ -170,11 +184,18 @@ fun AsyncPic(
     ) {
         if (isPreview) {
             // Static preview content - avoid using R.drawable which might not exist in library
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(shimmerColor)
-            )
+            if (source is ImageSource.Resources) {
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(id = source.resId),
+                    contentDescription = "Preview Image",
+                    contentScale = contentScale,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Box(Modifier.fillMaxSize()) {
+                    currentPlaceholder()
+                }
+            }
         } else {
             // Thumbnail/Blurred layer (only for Progressive)
             if (source is ImageSource.Progressive && source.thumbnailUrl != null) {
@@ -244,8 +265,33 @@ fun AsyncPic(
                     }
                 },
                 success = {
-                    if (isAnimated || allowClearImage) {
-                        SubcomposeAsyncImageContent()
+                   val canUseShader = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                           && transition is AsyncPicTransition.ShaderReveal
+                    if (isAnimated || allowClearImage){
+                        SubcomposeAsyncImageContent(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer {
+                                    if (canUseShader && animatedReveal <1f){
+                                        val reveal = transition as AsyncPicTransition.ShaderReveal
+                                        val shaderCode = when (reveal.type){
+                                            RevealType.DISSOLVE -> AsyncPicShaders.DISSOLVE_SHADER
+                                            RevealType.PIXELATE -> AsyncPicShaders.PIXELATE_SHADER
+                                            RevealType.WIPE -> AsyncPicShaders.WIPE_SHADER
+                                            else -> AsyncPicShaders.DISSOLVE_SHADER
+                                        }
+                                        val shader = android.graphics.RuntimeShader(shaderCode)
+                                        shader.setFloatUniform("progress", animatedReveal)
+                                        if (reveal.type == RevealType.PIXELATE || reveal.type == RevealType.WIPE){
+                                            shader.setFloatUniform("resolution", size.width, size.height)
+                                        }
+                                        renderEffect = android.graphics.RenderEffect
+                                            .createRuntimeShaderEffect(shader,"content")
+                                            .asComposeRenderEffect()
+                                    }
+                                }
+                        )
+                        SideEffect { revealProgress = 1f }
                     } else {
                         if (source is ImageSource.Progressive && source.thumbnailUrl != null) {
                             // Let thumbnail underneath show
