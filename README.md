@@ -45,6 +45,11 @@ dependencies {
 Sync your project with Gradle files and you're ready to go! 🎉
 
 ---
+## 📚 Documentation
+
+📖 **[Full Documentation](https://patilparas05.github.io/AsyncPic/)** - Comprehensive guides, API reference, and examples
+
+---
 ## 🎯 What's New in v3.0
 
 - ✨ **AGSL Shader Cinematic Reveals(Android 13+)** - Three stunning shader-based reveal effects (Dissolve, Pixelate, Wipe)
@@ -75,7 +80,14 @@ Sync your project with Gradle files and you're ready to go! 🎉
 
 ## 📱 Sample App
 
-The repository includes a comprehensive demo app.
+The repository includes a comprehensive demo app showcasing all features:
+
+- Interactive examples of all components
+- Real-world usage patterns
+- Performance demonstrations
+- Feature comparisons
+
+Clone the repository and run the app to explore!
 
 ---
 
