@@ -8,6 +8,7 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -20,9 +21,11 @@ jobs:
         run: chmod +x gradlew
 
       - name: Check for dependency updates
-        run: ./gradlew dependencyUpdates
+        run: ./gradlew dependencyUpdates -Drevision=release --no-configuration-cache
 
       - name: Upload dependency report
+
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dependency-report
